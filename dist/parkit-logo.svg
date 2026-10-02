@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 100" fill="none">
+  <defs>
+    <linearGradient id="logoPgrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0752B5" />
+      <stop offset="100%" stop-color="#35B5F6" />
+    </linearGradient>
+    <linearGradient id="logoGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#75D84C" />
+      <stop offset="100%" stop-color="#4CB825" />
+    </linearGradient>
+    <filter id="logoShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0752B5" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  
+  <!-- Icon Group -->
+  <g transform="translate(10, 8)" filter="url(#logoShadow)">
+    <path d="M42 4C24 4 10 18 10 36C10 56 38 80 40.5 82.2C41.4 83 42.6 83 43.5 82.2C46 80 74 56 74 36C74 18 60 4 42 4Z" fill="url(#logoPgrad)" />
+    <circle cx="42" cy="32" r="23" fill="#FFFFFF" />
+    <path d="M35 18H45C50 18 54 22 54 27C54 32 50 36 45 36H40V46H35V18ZM40 31H44.5C46.8 31 48.5 29.2 48.5 27C48.5 24.8 46.8 23 44.5 23H40V31Z" fill="#0752B5" />
+    <circle cx="58" cy="18" r="5" fill="url(#logoGreen)" />
+  </g>
+
+  <!-- Typography -->
+  <text x="105" y="58" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="900" font-size="44" letter-spacing="-1">
+    <tspan fill="#0752B5">PARK</tspan>
+    <tspan fill="#35B5F6">IT</tspan>
+  </text>
+  
+  <!-- Green Accent Dot -->
+  <circle cx="282" cy="30" r="7" fill="url(#logoGreen)" />
+  
+  <!-- Tagline -->
+  <text x="107" y="78" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-weight="700" font-size="11.5" letter-spacing="3" fill="#64748B">
+    FIND IT <tspan fill="#75D84C">•</tspan> RENT IT <tspan fill="#35B5F6">•</tspan> PARK IT
+  </text>
+</svg>
