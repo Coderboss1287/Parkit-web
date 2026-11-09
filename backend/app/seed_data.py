@@ -1,7 +1,8 @@
 import json
 import datetime
+import hashlib
 from sqlalchemy.orm import Session
-from app.models import ParkitListing, ParkitBooking, ParkitMessage
+from app.models import ParkitListing, ParkitBooking, ParkitMessage, ParkitUser
 
 SAMPLE_LISTINGS = [
     {
