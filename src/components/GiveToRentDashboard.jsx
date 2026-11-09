@@ -42,20 +42,36 @@ export default function GiveToRentDashboard() {
   const [activeTab, setActiveTab] = useState("overview"); // 'overview' | 'spaces' | 'availability' | 'bookings' | 'earnings' | 'messages'
   const [selectedChatListing, setSelectedChatListing] = useState(null);
 
+  const isSuperAdmin = user?.role === "admin";
+  const myListings = isSuperAdmin
+    ? listings
+    : listings.filter(
+        (l) =>
+          l.owner?.id === user?.id ||
+          l.owner?.email === user?.email ||
+          l.ownerId === user?.id ||
+          (user?.name && l.owner?.name?.toLowerCase() === user?.name?.toLowerCase())
+      );
+
+  const myListingIds = new Set(myListings.map((l) => l.id));
+  const myBookings = isSuperAdmin
+    ? bookings
+    : bookings.filter((b) => myListingIds.has(b.listingId));
+
   // Availability blocker states
   const [blockedDate, setBlockedDate] = useState("");
   const [blockedTimeStart, setBlockedTimeStart] = useState("14:00");
   const [blockedTimeEnd, setBlockedTimeEnd] = useState("16:00");
-  const [blockedListingId, setBlockedListingId] = useState(listings[0]?.id || "");
+  const [blockedListingId, setBlockedListingId] = useState(myListings[0]?.id || "");
   const [availabilityMessage, setAvailabilityMessage] = useState("");
 
-  // Host earnings metrics in INR
-  const totalHostEarnings = bookings
+  // Host earnings metrics in INR calculated strictly from authenticated host's real bookings
+  const totalHostEarnings = myBookings
     .filter((b) => b.status !== "cancelled")
     .reduce((acc, b) => acc + (b.ownerEarnings || Math.round(b.totalAmount * 0.88)), 0);
 
-  const totalBookingsCount = bookings.filter((b) => b.status !== "cancelled").length;
-  const activeSpacesCount = listings.filter((l) => l.isAvailable).length;
+  const totalBookingsCount = myBookings.filter((b) => b.status !== "cancelled").length;
+  const activeSpacesCount = myListings.filter((l) => l.isAvailable).length;
 
   const handleToggleListing = (id, currentStatus) => {
     updateListing(id, { isAvailable: !currentStatus });
@@ -119,9 +135,9 @@ export default function GiveToRentDashboard() {
           <div className="flex items-center gap-1 overflow-x-auto py-2.5">
             {[
               { id: "overview", label: "Overview", icon: BarChart3 },
-              { id: "spaces", label: `My Spaces (${listings.length})`, icon: Building2 },
+              { id: "spaces", label: `My Spaces (${myListings.length})`, icon: Building2 },
               { id: "availability", label: "Availability Manager", icon: Calendar },
-              { id: "bookings", label: `Reservations (${bookings.length})`, icon: Clock },
+              { id: "bookings", label: `Reservations (${myBookings.length})`, icon: Clock },
               { id: "earnings", label: "Revenue & Payouts", icon: IndianRupee },
               { id: "messages", label: "Messages & Inquiries", icon: MessageSquare }
             ].map((tab) => {
@@ -181,7 +197,7 @@ export default function GiveToRentDashboard() {
                   Active Listings Online
                 </span>
                 <div className="text-3xl font-black text-slate-800">
-                  {activeSpacesCount} / {listings.length}
+                  {activeSpacesCount} / {myListings.length}
                 </div>
                 <p className="text-xs text-slate-500 mt-2">Ready for instant guest check-in</p>
               </div>
@@ -276,7 +292,7 @@ export default function GiveToRentDashboard() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-black text-parkit-dark">
-                Your Registered Parking Locations ({listings.length})
+                Your Registered Parking Locations ({myListings.length})
               </h2>
               <button
                 onClick={() => setShowAddListing(true)}
@@ -287,8 +303,24 @@ export default function GiveToRentDashboard() {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {listings.map((item) => (
+            {myListings.length === 0 ? (
+              <div className="p-12 text-center bg-white rounded-3xl border border-slate-200">
+                <Building2 className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                <h3 className="text-base font-bold text-slate-800">No Parking Spaces Listed Yet</h3>
+                <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                  Turn your driveway, residential slot, or commercial basement into revenue. List your space to start receiving verified driver bookings.
+                </p>
+                <button
+                  onClick={() => setShowAddListing(true)}
+                  className="mt-5 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition inline-flex items-center gap-2"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  <span>List Your First Space Now</span>
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {myListings.map((item) => (
                 <div
                   key={item.id}
                   className="bg-white rounded-3xl p-5 border border-slate-200 shadow-premium flex flex-col justify-between"
@@ -352,8 +384,9 @@ export default function GiveToRentDashboard() {
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
+      )}
 
         {/* TAB 3: AVAILABILITY MANAGER */}
         {activeTab === "availability" && (
@@ -385,7 +418,7 @@ export default function GiveToRentDashboard() {
                     onChange={(e) => setBlockedListingId(e.target.value)}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold"
                   >
-                    {listings.map((l) => (
+                    {myListings.map((l) => (
                       <option key={l.id} value={l.id}>
                         {l.title}
                       </option>
@@ -448,7 +481,7 @@ export default function GiveToRentDashboard() {
                 Active Calendar Restrictions
               </h3>
               <div className="space-y-3">
-                {listings.map((l) => {
+                {myListings.map((l) => {
                   const blocked = l.schedule?.blockedDates || [];
                   const slots = l.schedule?.blockedSlots || [];
                   if (blocked.length === 0 && slots.length === 0) return null;
@@ -480,53 +513,63 @@ export default function GiveToRentDashboard() {
         {activeTab === "bookings" && (
           <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-premium space-y-4">
             <h2 className="text-xl font-black text-parkit-dark">
-              Incoming Renter Bookings ({bookings.length})
+              Incoming Renter Bookings ({myBookings.length})
             </h2>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-slate-200 text-slate-400 uppercase tracking-wider text-[10px]">
-                    <th className="pb-3 font-bold">Booking ID</th>
-                    <th className="pb-3 font-bold">Space Title</th>
-                    <th className="pb-3 font-bold">Date & Time</th>
-                    <th className="pb-3 font-bold">Vehicle Plate</th>
-                    <th className="pb-3 font-bold">Gate PIN</th>
-                    <th className="pb-3 font-bold">Payout (INR)</th>
-                    <th className="pb-3 font-bold">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {bookings.map((b) => (
-                    <tr key={b.id} className="hover:bg-slate-50 transition">
-                      <td className="py-3.5 font-mono font-bold text-parkit-royal">{b.id}</td>
-                      <td className="py-3.5 font-bold text-parkit-dark">{b.listingTitle}</td>
-                      <td className="py-3.5 text-slate-600">
-                        {b.date} • {b.startTime} - {b.endTime}
-                      </td>
-                      <td className="py-3.5 font-mono font-semibold text-slate-700">{b.vehicleNumber}</td>
-                      <td className="py-3.5 font-mono font-black text-emerald-700">{b.pinCode}</td>
-                      <td className="py-3.5 font-black text-emerald-700 text-sm">
-                        ₹{b.ownerEarnings || Math.round(b.totalAmount * 0.88)}
-                      </td>
-                      <td className="py-3.5">
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                            b.status === "confirmed"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : b.status === "completed"
-                              ? "bg-slate-100 text-slate-600"
-                              : "bg-rose-100 text-rose-700"
-                          }`}
-                        >
-                          {b.status}
-                        </span>
-                      </td>
+            {myBookings.length === 0 ? (
+              <div className="p-10 text-center bg-slate-50 rounded-2xl border border-slate-200/80">
+                <Clock className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                <p className="text-sm font-bold text-slate-700">No Reservations Yet</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  When drivers book your parking bays, their verified details, vehicle plate numbers, and gate PINs will appear here.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-slate-400 uppercase tracking-wider text-[10px]">
+                      <th className="pb-3 font-bold">Booking ID</th>
+                      <th className="pb-3 font-bold">Space Title</th>
+                      <th className="pb-3 font-bold">Date & Time</th>
+                      <th className="pb-3 font-bold">Vehicle Plate</th>
+                      <th className="pb-3 font-bold">Gate PIN</th>
+                      <th className="pb-3 font-bold">Payout (INR)</th>
+                      <th className="pb-3 font-bold">Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {myBookings.map((b) => (
+                      <tr key={b.id} className="hover:bg-slate-50 transition">
+                        <td className="py-3.5 font-mono font-bold text-parkit-royal">{b.id}</td>
+                        <td className="py-3.5 font-bold text-parkit-dark">{b.listingTitle}</td>
+                        <td className="py-3.5 text-slate-600">
+                          {b.date} • {b.startTime} - {b.endTime}
+                        </td>
+                        <td className="py-3.5 font-mono font-semibold text-slate-700">{b.vehicleNumber}</td>
+                        <td className="py-3.5 font-mono font-black text-emerald-700">{b.pinCode}</td>
+                        <td className="py-3.5 font-black text-emerald-700 text-sm">
+                          ₹{b.ownerEarnings || Math.round(b.totalAmount * 0.88)}
+                        </td>
+                        <td className="py-3.5">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                              b.status === "confirmed"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : b.status === "completed"
+                                ? "bg-slate-100 text-slate-600"
+                                : "bg-rose-100 text-rose-700"
+                            }`}
+                          >
+                            {b.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
@@ -605,7 +648,7 @@ export default function GiveToRentDashboard() {
             </h2>
 
             <div className="divide-y divide-slate-100">
-              {listings.map((l) => {
+              {myListings.map((l) => {
                 const history = messages[l.id];
                 if (!history || history.length === 0) return null;
                 const lastMsg = history[history.length - 1];

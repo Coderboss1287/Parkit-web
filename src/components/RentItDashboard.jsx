@@ -21,8 +21,7 @@ import {
 import { useApp } from "../context/AppContext";
 import { PARKING_CATEGORIES, LOCALITIES_MUMBAI, VEHICLE_TYPES } from "../data/categories";
 import {
-  calculateHaversineDistanceKm,
-  discoverHexBalancedParking
+  calculateHaversineDistanceKm
 } from "../utils/hexagonalSearch";
 import InteractiveMap from "./InteractiveMap";
 import ParkingCard from "./ParkingCard";
@@ -75,23 +74,13 @@ export default function RentItDashboard() {
   const [showAtlasDropdown, setShowAtlasDropdown] = useState(false);
   const [activeRoute, setActiveRoute] = useState(null);
 
-  // Core handler: runs invisible hexagonal ring search engine on coordinates
+  // Core handler: updates map center and locality filter
   const applyCoordinates = async (coords, localityLabel = "📍 My Current Location (GPS)", isLiveGps = false) => {
     setSearchCoords({ lat: coords.lat, lng: coords.lng, isLiveLocation: isLiveGps });
     setSelectedLocality(localityLabel);
 
     if (isLiveGps) {
       setUserLocation({ lat: coords.lat, lng: coords.lng });
-    }
-
-    try {
-      // Invisible Hexagonal Ring Search Engine (Ring 0, Ring 1, Ring 2 axial math + OSM Overpass API)
-      const balancedSpots = await discoverHexBalancedParking(coords.lat, coords.lng, localityLabel);
-      if (balancedSpots && balancedSpots.length > 0) {
-        setNearbyDynamicSpots(balancedSpots);
-      }
-    } catch (err) {
-      console.error("Invisible hexagonal search error:", err);
     }
   };
 

@@ -17,13 +17,18 @@ import {
 import { useApp } from "../context/AppContext";
 
 export default function MyBookingsModal({ isOpen, onClose }) {
-  const { bookings, cancelBooking, setChatListing, listings } = useApp();
+  const { user, bookings, cancelBooking, setChatListing, listings } = useApp();
   const [activeTab, setActiveTab] = useState("all"); // 'all' | 'confirmed' | 'completed' | 'cancelled'
   const [cancellingBookingId, setCancellingBookingId] = useState(null);
 
   if (!isOpen) return null;
 
-  const filteredBookings = bookings.filter((b) => {
+  // Filter bookings scoped to the authenticated user
+  const userBookings = user
+    ? bookings.filter((b) => b.userEmail?.toLowerCase() === user.email?.toLowerCase())
+    : bookings;
+
+  const filteredBookings = userBookings.filter((b) => {
     if (activeTab === "all") return true;
     return b.status === activeTab;
   });
@@ -48,7 +53,9 @@ export default function MyBookingsModal({ isOpen, onClose }) {
               <Calendar className="w-5 h-5 text-cyan-200" />
               <div>
                 <h3 className="font-extrabold text-base tracking-tight">My Reserved Parking Spaces</h3>
-                <p className="text-[11px] text-cyan-100">Manage your active reservations, PIN vouchers and receipts</p>
+                <p className="text-[11px] text-cyan-100">
+                  {user ? `Showing verified reservations for ${user.email}` : "Manage your active reservations, PIN vouchers and receipts"}
+                </p>
               </div>
             </div>
 
@@ -63,10 +70,10 @@ export default function MyBookingsModal({ isOpen, onClose }) {
           {/* Filter Tabs */}
           <div className="px-6 pt-4 pb-2 border-b border-slate-100 flex items-center gap-2 overflow-x-auto">
             {[
-              { id: "all", label: "All Bookings", count: bookings.length },
-              { id: "confirmed", label: "Upcoming / Active", count: bookings.filter((b) => b.status === "confirmed").length },
-              { id: "completed", label: "Completed", count: bookings.filter((b) => b.status === "completed").length },
-              { id: "cancelled", label: "Cancelled", count: bookings.filter((b) => b.status === "cancelled").length }
+              { id: "all", label: "All Bookings", count: userBookings.length },
+              { id: "confirmed", label: "Upcoming / Active", count: userBookings.filter((b) => b.status === "confirmed").length },
+              { id: "completed", label: "Completed", count: userBookings.filter((b) => b.status === "completed").length },
+              { id: "cancelled", label: "Cancelled", count: userBookings.filter((b) => b.status === "cancelled").length }
             ].map((tab) => (
               <button
                 key={tab.id}

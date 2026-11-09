@@ -22,7 +22,7 @@ import { VEHICLE_TYPES } from "../data/categories";
 import ParkitLogo from "./ParkitLogo";
 
 export default function BookingModal({ isOpen, onClose, listing }) {
-  const { user, createBooking, hasBookingConflict, setShowMyBookings } = useApp();
+  const { user, createBooking, hasBookingConflict, setShowMyBookings, setShowAuthModal, setAuthInitialMode } = useApp();
 
   const [date, setDate] = useState(() => {
     return new Date().toISOString().split("T")[0];
@@ -31,8 +31,8 @@ export default function BookingModal({ isOpen, onClose, listing }) {
   const [durationHours, setDurationHours] = useState(2);
   const [rentalType, setRentalType] = useState("hourly"); // 'hourly' | 'daily' | 'monthly'
   const [vehicleType, setVehicleType] = useState("four_wheeler");
-  const [vehicleNumber, setVehicleNumber] = useState("MH 02 CZ 4421");
-  const [paymentMethod, setPaymentMethod] = useState("upi"); // 'upi' | 'card' | 'qr'
+  const [vehicleNumber, setVehicleNumber] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("pay_at_gate"); // 'pay_at_gate' | 'online_gateway'
   const [paymentStep, setPaymentStep] = useState("checkout"); // 'checkout' | 'processing' | 'confirmed'
   const [confirmedBooking, setConfirmedBooking] = useState(null);
   const [conflictError, setConflictError] = useState("");
@@ -75,11 +75,23 @@ export default function BookingModal({ isOpen, onClose, listing }) {
     rentalBreakdown = calculateRentalTotals(effectiveHourly, durationHours);
   }
 
-  const handlePayAndConfirm = (e) => {
+  const handlePayAndConfirm = async (e) => {
     e.preventDefault();
     setConflictError("");
 
-    // Conflict check
+    if (!user) {
+      setConflictError("Please sign up or log in to confirm your parking reservation.");
+      if (setAuthInitialMode) setAuthInitialMode("signup");
+      if (setShowAuthModal) setShowAuthModal(true);
+      return;
+    }
+
+    if (!vehicleNumber.trim()) {
+      setConflictError("Please enter your vehicle license plate number.");
+      return;
+    }
+
+    // Real Double-Booking Conflict check
     if (hasBookingConflict(listing.id, date, startTime, endTime)) {
       setConflictError(
         "Double-booking prevented: This slot is already booked by another driver for this time window. Please pick another time slot."
@@ -87,45 +99,51 @@ export default function BookingModal({ isOpen, onClose, listing }) {
       return;
     }
 
+    if (paymentMethod === "online_gateway") {
+      setConflictError(
+        "Online payment gateway credentials (RAZORPAY_KEY_ID) are not configured in backend. Please select 'Pay on Arrival (At Gate)' to reserve your spot instantly."
+      );
+      return;
+    }
+
     setPaymentStep("processing");
 
-    // Simulate Razorpay test mode payment processing
-    setTimeout(async () => {
-      try {
-        const booking = await createBooking({
-          listingId: listing.id,
-          listingTitle: listing.title,
-          category: listing.category,
-          address: listing.address,
-          date,
-          startTime,
-          endTime,
-          durationHours: rentalType === "daily" ? 24 : rentalType === "monthly" ? 720 : durationHours,
-          hourlyRate: effectiveHourly,
-          rentalAmount: rentalBreakdown.rentalAmount,
-          platformFee: rentalBreakdown.platformFee,
-          totalAmount: rentalBreakdown.totalPayable,
-          ownerEarnings: rentalBreakdown.ownerEarnings,
-          vehicleType,
-          vehicleNumber,
-          ownerName: listing.owner.name,
-          ownerPhone: listing.owner.maskedPhone
-        });
+    try {
+      const booking = await createBooking({
+        listingId: listing.id,
+        listingTitle: listing.title,
+        category: listing.category,
+        address: listing.address,
+        date,
+        startTime,
+        endTime,
+        durationHours: rentalType === "daily" ? 24 : rentalType === "monthly" ? 720 : durationHours,
+        hourlyRate: effectiveHourly,
+        rentalAmount: rentalBreakdown.rentalAmount,
+        platformFee: rentalBreakdown.platformFee,
+        totalAmount: rentalBreakdown.totalPayable,
+        ownerEarnings: rentalBreakdown.ownerEarnings,
+        vehicleType,
+        vehicleNumber,
+        paymentMethod: "pay_at_gate",
+        paymentStatus: "pending_at_gate",
+        ownerName: listing.owner.name,
+        ownerPhone: listing.owner.maskedPhone
+      });
 
-        setConfirmedBooking(booking);
-        setPaymentStep("confirmed");
+      setConfirmedBooking(booking);
+      setPaymentStep("confirmed");
 
-        // Fire celebratory confetti!
-        confetti({
-          particleCount: 80,
-          spread: 70,
-          origin: { y: 0.6 }
-        });
-      } catch (err) {
-        setConflictError(err.message);
-        setPaymentStep("checkout");
-      }
-    }, 1400);
+      // Celebratory confetti on verified booking
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+    } catch (err) {
+      setConflictError(err.message || "Reservation failed. Please try again.");
+      setPaymentStep("checkout");
+    }
   };
 
   return (
@@ -323,58 +341,70 @@ export default function BookingModal({ isOpen, onClose, listing }) {
                       required
                       value={vehicleNumber}
                       onChange={(e) => setVehicleNumber(e.target.value.toUpperCase())}
-                      placeholder="MH 02 CZ 4421"
+                      placeholder="e.g. MH 02 AB 1234"
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 uppercase"
                     />
                   </div>
                 </div>
 
-                {/* Razorpay Test Mode Payment Simulator Options */}
+                {/* Payment Method Selection */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      Payment Gateway (Razorpay Sandbox)
+                      Payment Settlement Method
                     </label>
                     <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                      ⚡ Test Mode Active
+                      ✓ Zero Simulation
                     </span>
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <button
                       type="button"
-                      onClick={() => setPaymentMethod("upi")}
-                      className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition ${
-                        paymentMethod === "upi"
-                          ? "bg-blue-50 border-parkit-sky text-parkit-royal ring-2 ring-blue-200"
-                          : "bg-slate-50 border-slate-200 text-slate-600"
+                      onClick={() => {
+                        setPaymentMethod("pay_at_gate");
+                        setConflictError("");
+                      }}
+                      className={`p-3 rounded-2xl border text-xs font-bold flex flex-col text-left transition ${
+                        paymentMethod === "pay_at_gate"
+                          ? "bg-emerald-50/80 border-emerald-500 text-emerald-950 ring-2 ring-emerald-300"
+                          : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
                       }`}
                     >
-                      <Sparkles className="w-4 h-4 text-parkit-sky" />
-                      <span>UPI / GPay / PhonePe</span>
+                      <div className="flex items-center justify-between w-full mb-1">
+                        <span className="font-extrabold flex items-center gap-1.5 text-emerald-800">
+                          <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                          Pay on Arrival (At Gate)
+                        </span>
+                        <span className="text-[9px] px-1.5 py-0.5 bg-emerald-600 text-white rounded font-bold uppercase">
+                          Recommended
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-normal text-slate-500 leading-relaxed">
+                        Pay ₹{rentalBreakdown.totalPayable} to the host or gate guard upon vehicle entry. Guaranteed reservation.
+                      </p>
                     </button>
+
                     <button
                       type="button"
-                      onClick={() => setPaymentMethod("card")}
-                      className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition ${
-                        paymentMethod === "card"
+                      onClick={() => setPaymentMethod("online_gateway")}
+                      className={`p-3 rounded-2xl border text-xs font-bold flex flex-col text-left transition ${
+                        paymentMethod === "online_gateway"
                           ? "bg-blue-50 border-parkit-sky text-parkit-royal ring-2 ring-blue-200"
-                          : "bg-slate-50 border-slate-200 text-slate-600"
+                          : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
                       }`}
                     >
-                      <CreditCard className="w-4 h-4 text-parkit-royal" />
-                      <span>Debit / Credit Card</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod("qr")}
-                      className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition ${
-                        paymentMethod === "qr"
-                          ? "bg-blue-50 border-parkit-sky text-parkit-royal ring-2 ring-blue-200"
-                          : "bg-slate-50 border-slate-200 text-slate-600"
-                      }`}
-                    >
-                      <QrCode className="w-4 h-4 text-emerald-600" />
-                      <span>Instant Scan QR</span>
+                      <div className="flex items-center justify-between w-full mb-1">
+                        <span className="font-extrabold flex items-center gap-1.5 text-slate-800">
+                          <CreditCard className="w-4 h-4 text-parkit-sky" />
+                          Online Gateway (UPI / Card)
+                        </span>
+                        <span className="text-[9px] px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded font-bold uppercase">
+                          Gateway Key Req.
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-normal text-slate-500 leading-relaxed">
+                        Requires RAZORPAY_KEY_ID configured in backend. Transparent dependency.
+                      </p>
                     </button>
                   </div>
                 </div>
@@ -409,7 +439,7 @@ export default function BookingModal({ isOpen, onClose, listing }) {
                   className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-parkit-green hover:opacity-95 text-white font-extrabold text-sm rounded-2xl shadow-lg shadow-emerald-500/25 transition active:scale-[0.98] flex items-center justify-center gap-2"
                 >
                   <ShieldCheck className="w-4 h-4" />
-                  <span>Confirm & Pay ₹{rentalBreakdown.totalPayable}</span>
+                  <span>{paymentMethod === "pay_at_gate" ? "Confirm Reservation (Pay at Gate)" : "Proceed to Payment"} • ₹{rentalBreakdown.totalPayable}</span>
                 </button>
               </form>
             )}
@@ -418,10 +448,10 @@ export default function BookingModal({ isOpen, onClose, listing }) {
               <div className="py-12 text-center space-y-4">
                 <div className="w-16 h-16 rounded-full border-4 border-parkit-sky border-t-transparent animate-spin mx-auto" />
                 <h3 className="text-lg font-black text-parkit-dark">
-                  Processing Razorpay Test Payment...
+                  Securing Reservation in Database...
                 </h3>
                 <p className="text-xs text-slate-500 max-w-xs mx-auto">
-                  Authorizing transaction of ₹{rentalBreakdown.totalPayable} and reserving your parking bay in the spatial registry.
+                  Validating slot availability, persisting booking record, and generating verified 6-digit gate PIN pass.
                 </p>
               </div>
             )}

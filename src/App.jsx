@@ -22,6 +22,7 @@ function AppContent() {
     isTransitioning,
     showAuthModal,
     setShowAuthModal,
+    setAuthInitialMode,
     showMyBookings,
     setShowMyBookings,
     showAddListing,
@@ -44,8 +45,9 @@ function AppContent() {
     } catch {}
     setHasCompletedIntro(true);
 
-    // If not authenticated, open auth prompt
+    // If not authenticated, open Sign Up prompt as primary option
     if (!isAuthenticated) {
+      if (setAuthInitialMode) setAuthInitialMode("signup");
       setShowAuthModal(true);
     } else {
       changeMode("purpose_select");

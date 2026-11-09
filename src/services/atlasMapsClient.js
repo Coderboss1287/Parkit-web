@@ -474,9 +474,47 @@ class AtlasMapsClient {
   // =========================================================================
 
   /**
-   * Upsert user login in persistent database
+   * Register new user in persistent SQL database
+   */
+  async signupUser(userData) {
+    try {
+      const res = await fetch(`${this.baseUrl}/v1/parkit/auth/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": this.apiKey
+        },
+        body: JSON.stringify({
+          name: userData.name,
+          email: userData.email,
+          phone: userData.phone || null,
+          role: userData.role || "all",
+          password: userData.password,
+          confirmPassword: userData.confirmPassword
+        })
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        const msg = errData.detail || `Registration failed (${res.status})`;
+        const err = new Error(msg);
+        err.status = res.status;
+        throw err;
+      }
+      return await res.json();
+    } catch (err) {
+      if (err.status) throw err;
+      console.error("Backend user signup connection failed:", err);
+      throw new Error("Unable to connect to authentication server. Please ensure the backend is running.");
+    }
+  }
+
+  /**
+   * Authenticate user against persistent SQL database
    */
   async loginUser(userData) {
+    if (userData?.authMode === "signup") {
+      return this.signupUser(userData);
+    }
     try {
       const res = await fetch(`${this.baseUrl}/v1/parkit/auth/login`, {
         method: "POST",
@@ -484,7 +522,11 @@ class AtlasMapsClient {
           "Content-Type": "application/json",
           "X-API-Key": this.apiKey
         },
-        body: JSON.stringify(userData)
+        body: JSON.stringify({
+          email: userData.email,
+          password: userData.password,
+          authMode: "login"
+        })
       });
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
@@ -495,11 +537,9 @@ class AtlasMapsClient {
       }
       return await res.json();
     } catch (err) {
-      if (err.status === 400 || err.status === 401) {
-        throw err;
-      }
-      console.warn("Backend user login unavailable, using offline fallback:", err);
-      return null;
+      if (err.status) throw err;
+      console.error("Backend user login connection failed:", err);
+      throw new Error("Unable to connect to authentication server. Please ensure the backend is running.");
     }
   }
 

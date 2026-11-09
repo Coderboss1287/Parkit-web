@@ -1,3 +1,6 @@
+import os
+import re
+import hmac
 import json
 import random
 import datetime
@@ -13,16 +16,45 @@ from app.models import ParkitUser, ParkitListing, ParkitBooking, ParkitMessage
 
 router = APIRouter(prefix="/v1/parkit", tags=["PARKIT Smart Parking Marketplace Real Database"])
 
+EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+def hash_password(password: str) -> str:
+    """Hashes a password using PBKDF2-HMAC-SHA256 with a unique 16-byte salt."""
+    salt = os.urandom(16).hex()
+    pwd_hash = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), bytes.fromhex(salt), 100000).hex()
+    return f"{salt}:{pwd_hash}"
+
+def verify_password(plain_password: str, stored_hash: str) -> bool:
+    """Verifies a plain password against stored salt:hash or legacy SHA256 hex."""
+    if not stored_hash:
+        return False
+    if ":" in stored_hash:
+        salt, expected_hash = stored_hash.split(":", 1)
+        calc_hash = hashlib.pbkdf2_hmac("sha256", plain_password.encode("utf-8"), bytes.fromhex(salt), 100000).hex()
+        return hmac.compare_digest(calc_hash, expected_hash)
+    else:
+        # Backward compatibility with legacy unsalted SHA256
+        calc_sha = hashlib.sha256(plain_password.encode("utf-8")).hexdigest()
+        return hmac.compare_digest(calc_sha, stored_hash)
+
 # -----------------------------------------------------------------------------
 # PYDANTIC SCHEMAS
 # -----------------------------------------------------------------------------
 
-class UserLoginRequest(BaseModel):
-    name: Optional[str] = "Demo User"
-    email: str = "demo@parkit.in"
+class UserSignupRequest(BaseModel):
+    name: str
+    email: str
     phone: Optional[str] = None
     role: Optional[str] = "all"
+    password: str
+    confirmPassword: Optional[str] = None
+
+class UserLoginRequest(BaseModel):
+    email: str
     password: Optional[str] = None
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    role: Optional[str] = "all"
     confirmPassword: Optional[str] = None
     authMode: Optional[str] = "login"  # login | signup
 
@@ -94,89 +126,112 @@ class MessageCreateRequest(BaseModel):
 # 1. USER AUTH & ACCOUNTS
 # -----------------------------------------------------------------------------
 
-@router.post("/auth/login")
-def login_or_register_user(req: UserLoginRequest, db: Session = Depends(get_db)):
+@router.post("/auth/signup")
+@router.post("/auth/register")
+def register_user(req: UserSignupRequest, db: Session = Depends(get_db)):
     email = req.email.strip().lower()
     now = datetime.datetime.now(datetime.timezone.utc)
+
+    # 1. Validate required name
+    if not req.name or not req.name.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please enter your full name."
+        )
+
+    # 2. Validate email format
+    if not EMAIL_REGEX.match(email):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please enter a valid email address."
+        )
+
+    # 3. Validate password length
+    if not req.password or len(req.password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 6 characters long."
+        )
+
+    # 4. Validate password confirmation
+    if req.confirmPassword and req.password != req.confirmPassword:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Passwords do not match. Please ensure both fields are identical."
+        )
+
+    # 5. Check duplicate email
+    existing_user = db.query(ParkitUser).filter(ParkitUser.email == email).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email is already registered. Please log in instead."
+        )
+
+    # 6. Hash password with PBKDF2-SHA256 salt
+    salted_hash = hash_password(req.password)
+
+    # 7. Persist real account
+    user = ParkitUser(
+        id="usr-" + str(int(now.timestamp() * 1000)),
+        name=req.name.strip(),
+        email=email,
+        password_hash=salted_hash,
+        phone=req.phone.strip() if req.phone else None,
+        role=req.role or "all",
+        created_at=now,
+        last_login_at=now
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user.to_dict()
+
+
+@router.post("/auth/login")
+def login_user(req: UserLoginRequest, db: Session = Depends(get_db)):
+    # Dispatches to signup logic if client requested registration
+    if req.authMode == "signup":
+        signup_payload = UserSignupRequest(
+            name=req.name or "User",
+            email=req.email,
+            phone=req.phone,
+            role=req.role or "all",
+            password=req.password or "",
+            confirmPassword=req.confirmPassword
+        )
+        return register_user(signup_payload, db)
+
+    email = req.email.strip().lower()
+    now = datetime.datetime.now(datetime.timezone.utc)
+
+    # 1. Verify account exists in database
     user = db.query(ParkitUser).filter(ParkitUser.email == email).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Account not found. Please sign up first."
+        )
 
-    auth_mode = req.authMode or ("signup" if not user else "login")
+    # 2. Verify password provided
+    if not req.password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password is required to log in."
+        )
 
-    if auth_mode == "signup":
-        # Validate password & confirmPassword
-        if req.password or req.confirmPassword:
-            if req.password != req.confirmPassword:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="PASSWORD_MISMATCH: Passwords do not match. Please ensure both fields are identical."
-                )
-            if len(req.password or "") < 6:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Password must be at least 6 characters long."
-                )
+    # 3. Verify password hash
+    if not verify_password(req.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect password. Please try again."
+        )
 
-        pwd_hash = hashlib.sha256(req.password.encode("utf-8")).hexdigest() if req.password else None
+    # 4. Auto-upgrade legacy hash to salted PBKDF2
+    if ":" not in (user.password_hash or ""):
+        user.password_hash = hash_password(req.password)
 
-        if user:
-            if req.name and req.name.strip():
-                user.name = req.name.strip()
-            if req.phone:
-                user.phone = req.phone
-            if pwd_hash:
-                user.password_hash = pwd_hash
-            user.last_login_at = now
-        else:
-            user = ParkitUser(
-                id="usr-" + str(int(now.timestamp() * 1000)),
-                name=req.name.strip() if req.name else "User",
-                email=email,
-                password_hash=pwd_hash,
-                phone=req.phone,
-                role=req.role or "all",
-                created_at=now,
-                last_login_at=now
-            )
-            db.add(user)
-    else:
-        # auth_mode == "login"
-        if not user:
-            if req.password and len(req.password) >= 6:
-                pwd_hash = hashlib.sha256(req.password.encode("utf-8")).hexdigest()
-                user = ParkitUser(
-                    id="usr-" + str(int(now.timestamp() * 1000)),
-                    name=req.name or email.split("@")[0].title(),
-                    email=email,
-                    password_hash=pwd_hash,
-                    phone=req.phone,
-                    role=req.role or "all",
-                    created_at=now,
-                    last_login_at=now
-                )
-                db.add(user)
-            else:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="INVALID_CREDENTIALS: User not found. Please sign up first."
-                )
-        else:
-            if req.password:
-                entered_hash = hashlib.sha256(req.password.encode("utf-8")).hexdigest()
-                if user.password_hash:
-                    if entered_hash != user.password_hash:
-                        raise HTTPException(
-                            status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="INVALID_CREDENTIALS: Incorrect password. Please try again."
-                        )
-                else:
-                    user.password_hash = entered_hash
-
-            if req.name and req.name != "Demo User":
-                user.name = req.name
-            if req.phone:
-                user.phone = req.phone
-            user.last_login_at = now
-
+    user.last_login_at = now
     db.commit()
     db.refresh(user)
     return user.to_dict()

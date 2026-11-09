@@ -88,13 +88,13 @@ export default function ParkitAIModal({ isOpen, onClose, onApplyListingFilter })
               </div>
               <div>
                 <h3 className="font-extrabold text-sm tracking-tight flex items-center gap-1.5">
-                  <span>PARKIT AI Smart Assistant</span>
+                  <span>PARKIT Smart Parking Assistant</span>
                   <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-[9px] font-bold uppercase text-emerald-300">
-                    GenAI Ready
+                    Smart Search
                   </span>
                 </h3>
                 <p className="text-[11px] text-cyan-200">
-                  Ask natural questions to discover optimal parking in Mumbai
+                  Search across verified database listings by location, price and amenities
                 </p>
               </div>
             </div>

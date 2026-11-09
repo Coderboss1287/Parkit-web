@@ -24,6 +24,7 @@ export default function Navbar() {
     activeMode,
     changeMode,
     setShowAuthModal,
+    setAuthInitialMode,
     setAuthRedirectMode,
     logout,
     setShowMyBookings,
@@ -236,6 +237,7 @@ export default function Navbar() {
                 <button
                   onClick={() => {
                     setAuthRedirectMode(activeMode);
+                    if (setAuthInitialMode) setAuthInitialMode("login");
                     setShowAuthModal(true);
                   }}
                   className="px-4 py-2 text-xs font-bold text-parkit-royal hover:bg-blue-50 rounded-xl transition"
@@ -245,6 +247,7 @@ export default function Navbar() {
                 <button
                   onClick={() => {
                     setAuthRedirectMode(activeMode);
+                    if (setAuthInitialMode) setAuthInitialMode("signup");
                     setShowAuthModal(true);
                   }}
                   className="px-4 py-2 text-xs font-bold bg-gradient-to-r from-parkit-royal to-parkit-sky text-white rounded-xl shadow-md shadow-blue-500/20 hover:opacity-95 transition"
@@ -336,15 +339,30 @@ export default function Navbar() {
               </button>
             </div>
           ) : (
-            <button
-              onClick={() => {
-                setShowAuthModal(true);
-                setMobileMenuOpen(false);
-              }}
-              className="w-full py-2.5 bg-parkit-royal text-white font-bold text-sm rounded-xl"
-            >
-              Login / Sign Up
-            </button>
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <button
+                onClick={() => {
+                  setAuthRedirectMode(activeMode);
+                  if (setAuthInitialMode) setAuthInitialMode("login");
+                  setShowAuthModal(true);
+                  setMobileMenuOpen(false);
+                }}
+                className="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl"
+              >
+                Log In
+              </button>
+              <button
+                onClick={() => {
+                  setAuthRedirectMode(activeMode);
+                  if (setAuthInitialMode) setAuthInitialMode("signup");
+                  setShowAuthModal(true);
+                  setMobileMenuOpen(false);
+                }}
+                className="py-2.5 bg-gradient-to-r from-parkit-royal to-parkit-sky text-white font-bold text-xs rounded-xl shadow-md"
+              >
+                Sign Up
+              </button>
+            </div>
           )}
         </div>
       )}

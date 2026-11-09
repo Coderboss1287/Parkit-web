@@ -99,6 +99,7 @@ export function AppProvider({ children }) {
   });
 
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authInitialMode, setAuthInitialMode] = useState("signup"); // 'signup' | 'login'
   const [authRedirectMode, setAuthRedirectMode] = useState("purpose_select");
 
   // SVG Wave Page Transition trigger
@@ -240,48 +241,65 @@ export function AppProvider({ children }) {
   };
 
   // Auth actions
-  const login = async (userData) => {
-    const email = (userData?.email || "demo@parkit.in").trim().toLowerCase();
-    const name = userData?.name || "Demo User";
-    const phone = userData?.phone || "+91 98200 00000";
-
-    let loggedInUser = {
-      id: "usr-" + Date.now(),
-      name,
-      email,
-      phone,
-      role: "all",
-      isDemo: true
-    };
-
-    try {
-      const dbUser = await atlasMaps.loginUser({
-        name,
-        email,
-        phone,
-        password: userData?.password,
-        confirmPassword: userData?.confirmPassword,
-        authMode: userData?.authMode || "login",
-        role: "all"
-      });
-      if (dbUser && dbUser.id) {
-        loggedInUser = { ...loggedInUser, ...dbUser };
-      }
-    } catch (err) {
-      if (err.status === 400 || err.status === 401) {
-        throw err;
-      }
-      console.warn("Backend login failed, using local user session:", err);
+  const signup = async (userData) => {
+    const dbUser = await atlasMaps.signupUser(userData);
+    if (!dbUser || !dbUser.id) {
+      throw new Error("Registration failed. Please try again.");
     }
 
-    setUser(loggedInUser);
+    const sessionUser = {
+      id: dbUser.id,
+      name: dbUser.name,
+      email: dbUser.email,
+      phone: dbUser.phone || "",
+      role: dbUser.role || "all",
+      createdAt: dbUser.createdAt,
+      lastLoginAt: dbUser.lastLoginAt
+    };
+
+    setUser(sessionUser);
     setShowAuthModal(false);
     changeMode(authRedirectMode || "purpose_select");
-    return loggedInUser;
+    return sessionUser;
+  };
+
+  const login = async (userData) => {
+    if (userData?.authMode === "signup") {
+      return signup(userData);
+    }
+
+    const email = (userData?.email || "").trim().toLowerCase();
+    const dbUser = await atlasMaps.loginUser({
+      email,
+      password: userData?.password,
+      authMode: "login"
+    });
+
+    if (!dbUser || !dbUser.id) {
+      throw new Error("Authentication failed. Please check your credentials.");
+    }
+
+    const sessionUser = {
+      id: dbUser.id,
+      name: dbUser.name,
+      email: dbUser.email,
+      phone: dbUser.phone || "",
+      role: dbUser.role || "all",
+      createdAt: dbUser.createdAt,
+      lastLoginAt: dbUser.lastLoginAt
+    };
+
+    setUser(sessionUser);
+    setShowAuthModal(false);
+    changeMode(authRedirectMode || "purpose_select");
+    return sessionUser;
   };
 
   const logout = () => {
     setUser(null);
+    try {
+      localStorage.removeItem(STORAGE_KEYS.USER);
+    } catch {}
     changeMode("landing");
   };
 
@@ -476,44 +494,6 @@ export function AppProvider({ children }) {
     } catch (err) {
       console.warn("Backend chat message send deferred:", err);
     }
-
-    // Simulated Owner Auto-Reply after 1.2 seconds for realistic prototype feel
-    setTimeout(async () => {
-      const autoResponses = [
-        "Yes, the parking space is completely available as listed! You can proceed to book.",
-        "Yes, 24/7 security guard is stationed at the gate and will verify your PARKIT PIN code.",
-        "Yes, entry is wide and easily fits large SUVs and sedans. High clearance.",
-        "Sure, you can extend your duration anytime through the app if no overlapping slot is booked."
-      ];
-      const randomReply = autoResponses[Math.floor(Math.random() * autoResponses.length)];
-      const replyTimeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-
-      const replyMsg = {
-        id: "msg-reply-" + Date.now(),
-        sender: "owner",
-        senderName: "Host / Property Manager",
-        text: randomReply,
-        timestamp: replyTimeStr,
-        date: "Today"
-      };
-
-      setMessages((prev) => ({
-        ...prev,
-        [listingId]: [...(prev[listingId] || []), replyMsg]
-      }));
-
-      try {
-        await atlasMaps.sendChatMessage(listingId, {
-          sender: "owner",
-          senderName: "Host / Property Manager",
-          text: randomReply,
-          timestamp: replyTimeStr,
-          date: "Today"
-        });
-      } catch (err) {
-        console.warn("Backend owner reply sync deferred:", err);
-      }
-    }, 1200);
   };
 
   return (
@@ -528,8 +508,11 @@ export function AppProvider({ children }) {
         isTransitioning,
         showAuthModal,
         setShowAuthModal,
+        authInitialMode,
+        setAuthInitialMode,
         authRedirectMode,
         setAuthRedirectMode,
+        signup,
         login,
         logout,
         listings,
