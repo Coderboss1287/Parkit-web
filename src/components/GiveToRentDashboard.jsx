@@ -178,7 +178,7 @@ export default function GiveToRentDashboard() {
                 </div>
                 <div className="flex items-center gap-1 mt-2 text-xs font-bold text-emerald-600">
                   <TrendingUp className="w-3.5 h-3.5" />
-                  <span>+18.4% vs last month</span>
+                  <span>Real-time Host Payouts</span>
                 </div>
               </div>
 
@@ -222,35 +222,43 @@ export default function GiveToRentDashboard() {
                     onClick={() => setActiveTab("bookings")}
                     className="text-xs font-bold text-emerald-700 hover:underline"
                   >
-                    View All ({bookings.length})
+                    View All ({myBookings.length})
                   </button>
                 </div>
 
-                <div className="space-y-3">
-                  {bookings.slice(0, 4).map((b) => (
-                    <div
-                      key={b.id}
-                      className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between gap-3 text-xs"
-                    >
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <strong className="text-parkit-dark">{b.listingTitle}</strong>
-                          <span className="font-mono text-[10px] text-slate-400">({b.id})</span>
+                {myBookings.length === 0 ? (
+                  <div className="py-8 text-center text-slate-400">
+                    <Clock className="w-8 h-8 mx-auto mb-2 opacity-40 text-slate-400" />
+                    <p className="text-xs font-bold text-slate-600">No Reservations Yet</p>
+                    <p className="text-[11px] text-slate-400">Guest bookings for your parking spaces will appear here in real-time.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {myBookings.slice(0, 4).map((b) => (
+                      <div
+                        key={b.id}
+                        className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between gap-3 text-xs"
+                      >
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <strong className="text-parkit-dark">{b.listingTitle}</strong>
+                            <span className="font-mono text-[10px] text-slate-400">({b.id})</span>
+                          </div>
+                          <p className="text-slate-500 mt-0.5">
+                            {b.date} • {b.startTime} - {b.endTime} • {b.vehicleNumber}
+                          </p>
                         </div>
-                        <p className="text-slate-500 mt-0.5">
-                          {b.date} • {b.startTime} - {b.endTime} • {b.vehicleNumber}
-                        </p>
-                      </div>
 
-                      <div className="text-right">
-                        <span className="font-black text-emerald-700 text-sm">
-                          +₹{b.ownerEarnings || Math.round(b.totalAmount * 0.88)}
-                        </span>
-                        <p className="text-[10px] text-slate-400">Payout</p>
+                        <div className="text-right">
+                          <span className="font-black text-emerald-700 text-sm">
+                            +₹{b.ownerEarnings || Math.round(b.totalAmount * 0.88)}
+                          </span>
+                          <p className="text-[10px] text-slate-400">Payout</p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Host Quick Guide */}
@@ -588,55 +596,54 @@ export default function GiveToRentDashboard() {
                 <div className="text-3xl font-black text-slate-700 mt-1">
                   ₹{Math.round(totalHostEarnings * (12 / 88))}
                 </div>
-                <p className="text-xs text-slate-500 mt-1">12% covering insurance & payment gateways</p>
+                <p className="text-xs text-slate-500 mt-1">12% covering platform operations & gateways</p>
               </div>
 
               <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-premium">
-                <span className="text-xs text-slate-400 font-bold uppercase">Average Spot Yield</span>
-                <div className="text-3xl font-black text-parkit-royal mt-1">₹480/day</div>
-                <p className="text-xs text-slate-500 mt-1">Peak weekends in BKC & Bandra</p>
+                <span className="text-xs text-slate-400 font-bold uppercase">Total Bookings</span>
+                <div className="text-3xl font-black text-parkit-royal mt-1">{totalBookingsCount}</div>
+                <p className="text-xs text-slate-500 mt-1">Verified check-ins recorded in database</p>
               </div>
             </div>
 
-            {/* Interactive Monthly Revenue SVG Bar Chart */}
-            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-premium space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-base font-black text-parkit-dark">Monthly Revenue Trend (2026)</h3>
-                  <p className="text-xs text-slate-500">Gross host earnings across Mumbai spaces (₹ INR)</p>
-                </div>
-                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                  Target: ₹25,000 / month
-                </span>
+            {myBookings.length === 0 ? (
+              <div className="bg-white rounded-3xl p-12 border border-slate-200 shadow-premium text-center">
+                <BarChart3 className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                <h3 className="text-base font-bold text-slate-800">No Earnings Recorded Yet</h3>
+                <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                  When drivers reserve and check into your parking bays, your real-time earnings, payouts, and monthly trends will be computed and displayed here.
+                </p>
               </div>
+            ) : (
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-premium space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-black text-parkit-dark">Verified Host Revenue</h3>
+                    <p className="text-xs text-slate-500">Gross host earnings computed from database reservations (₹ INR)</p>
+                  </div>
+                  <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                    Live Verified Records
+                  </span>
+                </div>
 
-              {/* Responsive SVG Chart */}
-              <div className="h-56 w-full pt-4">
-                <div className="h-full flex items-end justify-between gap-2 px-2 pb-6 border-b border-slate-200">
-                  {[
-                    { month: "May", amount: 8400, height: "35%" },
-                    { month: "Jun", amount: 12200, height: "50%" },
-                    { month: "Jul", amount: 15600, height: "65%" },
-                    { month: "Aug", amount: 18900, height: "78%" },
-                    { month: "Sep", amount: 22400, height: "92%" },
-                    { month: "Oct (Proj)", amount: 24800, height: "100%" }
-                  ].map((col, idx) => (
-                    <div key={idx} className="flex-1 flex flex-col items-center gap-2 group cursor-pointer">
-                      <span className="text-[11px] font-bold text-slate-500 group-hover:text-emerald-700 transition">
-                        ₹{col.amount}
-                      </span>
-                      <div className="w-full max-w-[48px] bg-slate-100 rounded-t-xl overflow-hidden h-36 flex items-end">
-                        <div
-                          style={{ height: col.height }}
-                          className="w-full bg-gradient-to-t from-emerald-600 to-parkit-green rounded-t-xl group-hover:from-emerald-700 group-hover:to-emerald-500 transition-all shadow-md"
-                        />
+                <div className="divide-y divide-slate-100">
+                  {myBookings.map((b) => (
+                    <div key={b.id} className="py-3 flex items-center justify-between text-xs">
+                      <div>
+                        <strong className="text-parkit-dark block">{b.listingTitle}</strong>
+                        <span className="text-slate-500">{b.date} • {b.startTime} - {b.endTime} • {b.vehicleNumber}</span>
                       </div>
-                      <span className="text-xs font-extrabold text-slate-600">{col.month}</span>
+                      <div className="text-right">
+                        <span className="font-black text-emerald-700 text-sm">
+                          +₹{b.ownerEarnings || Math.round(b.totalAmount * 0.88)}
+                        </span>
+                        <p className="text-[10px] text-slate-400">Net Host Payout</p>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 

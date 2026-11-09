@@ -12,75 +12,9 @@ const STORAGE_KEYS = {
   ACTIVE_MODE: "parkit_mode_v1"
 };
 
-const DEFAULT_BOOKINGS = [
-  {
-    id: "PKT-MUM-8924",
-    listingId: "pkt-mum-001",
-    listingTitle: "BKC G-Block Executive Basement Parking",
-    category: "office",
-    address: "Tower 2, G Block, Bandra Kurla Complex, Mumbai",
-    date: "2026-10-03",
-    startTime: "11:00",
-    endTime: "14:00",
-    durationHours: 3,
-    hourlyRate: 75,
-    rentalAmount: 225,
-    platformFee: 27,
-    totalAmount: 252,
-    ownerEarnings: 198,
-    status: "confirmed", // "confirmed" | "completed" | "cancelled"
-    vehicleType: "four_wheeler",
-    vehicleNumber: "MH 02 CZ 4421",
-    bookingCreatedAt: "2026-10-02T12:00:00.000Z",
-    ownerName: "Rajesh Singhania",
-    ownerPhone: "+91 98201 •••••",
-    pinCode: "8924",
-    qrCode: "PKT-MUM-8924-GATE-VERIFIED"
-  },
-  {
-    id: "PKT-NAV-3109",
-    listingId: "pkt-mum-003",
-    listingTitle: "Vashi Sector 17 Commercial Tower Lot",
-    category: "commercial",
-    address: "Commodity Exchange Building, Sector 17, Vashi, Navi Mumbai",
-    date: "2026-09-28",
-    startTime: "14:00",
-    endTime: "17:00",
-    durationHours: 3,
-    hourlyRate: 85,
-    rentalAmount: 255,
-    platformFee: 31,
-    totalAmount: 286,
-    ownerEarnings: 224,
-    status: "completed",
-    vehicleType: "four_wheeler",
-    vehicleNumber: "MH 43 AB 8912",
-    bookingCreatedAt: "2026-09-28T10:00:00.000Z",
-    ownerName: "Amit Deshmukh",
-    ownerPhone: "+91 98690 •••••",
-    pinCode: "3109",
-    qrCode: "PKT-NAV-3109-GATE-VERIFIED"
-  }
-];
+const DEFAULT_BOOKINGS = [];
 
-const DEFAULT_MESSAGES = {
-  "pkt-mum-001": [
-    {
-      id: "msg-1",
-      sender: "customer",
-      text: "Hi Rajesh, is this parking covered and does it fit a Kia Seltos SUV?",
-      timestamp: "10:15 AM",
-      date: "Today"
-    },
-    {
-      id: "msg-2",
-      sender: "owner",
-      text: "Hello! Yes, the basement ceiling clearance is 2.8m, easily accommodates full-size SUVs with roof carriers. Security guard will assist your bay entry.",
-      timestamp: "10:17 AM",
-      date: "Today"
-    }
-  ]
-};
+const DEFAULT_MESSAGES = {};
 
 export function AppProvider({ children }) {
   // Auth state
@@ -313,11 +247,11 @@ export function AppProvider({ children }) {
       reviewCount: 1,
       isAvailable: true,
       owner: {
-        id: user?.id || "own-demo",
-        name: user?.name || "Current Host",
+        id: user?.id || `own-${Date.now()}`,
+        name: user?.name || "Verified Space Host",
         type: "Verified Owner",
         phone: user?.phone || "+91 98200 XXXXX",
-        maskedPhone: "+91 98200 •••••",
+        maskedPhone: user?.phone ? `${user.phone.slice(0, 8)}•••••` : "+91 98200 •••••",
         verified: true,
         responseRate: "100%",
         responseTime: "< 5 mins"
@@ -403,7 +337,7 @@ export function AppProvider({ children }) {
       const payload = {
         listingId: bookingData.listingId,
         listingTitle: bookingData.listingTitle,
-        userEmail: user?.email || bookingData.userEmail || "demo@parkit.in",
+        userEmail: user?.email || bookingData.userEmail || "",
         userName: user?.name || bookingData.userName || "Customer",
         category: bookingData.category,
         address: bookingData.address,

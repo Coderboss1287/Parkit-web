@@ -35,7 +35,7 @@ export default function PurposeSelection() {
         {/* User greeting */}
         <div className="flex items-center gap-2 bg-white/80 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-slate-200 shadow-sm text-xs font-semibold text-slate-700 max-w-full">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping flex-shrink-0" />
-          <span className="truncate">Signed in as <strong className="text-parkit-royal">{user?.name || "Demo User"}</strong></span>
+          <span className="truncate">Signed in as <strong className="text-parkit-royal">{user?.name || "User"}</strong></span>
         </div>
       </header>
 

@@ -95,8 +95,8 @@ class ListingUpdateRequest(BaseModel):
 class BookingCreateRequest(BaseModel):
     listingId: str
     listingTitle: str
-    userEmail: Optional[str] = "demo@parkit.in"
-    userName: Optional[str] = "Demo User"
+    userEmail: Optional[str] = None
+    userName: Optional[str] = "Customer"
     category: Optional[str] = None
     address: Optional[str] = None
     date: str
@@ -387,9 +387,17 @@ def create_booking(req: BookingCreateRequest, db: Session = Depends(get_db)):
     category = req.category or (listing.category if listing else "general")
     address = req.address or (listing.address if listing else "")
 
+    # Validate real user email
+    user_email = (req.userEmail or "").strip().lower()
+    if not user_email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User email is required to reserve a parking space. Please sign up or log in first."
+        )
+
     new_booking = ParkitBooking(
         id=booking_id,
-        user_email=(req.userEmail or "demo@parkit.in").strip().lower(),
+        user_email=user_email,
         user_name=req.userName or "Customer",
         listing_id=req.listingId,
         listing_title=listing_title,

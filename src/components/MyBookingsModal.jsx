@@ -212,7 +212,7 @@ export default function MyBookingsModal({ isOpen, onClose }) {
                           Are you sure you want to cancel this booking?
                         </p>
                         <p className="text-[11px] text-slate-600">
-                          100% refund of ₹{b.totalAmount} will be returned to your test payment method.
+                          100% refund of ₹{b.totalAmount} will be returned and your reserved slot will be released.
                         </p>
                         <div className="flex justify-end gap-2 pt-1">
                           <button

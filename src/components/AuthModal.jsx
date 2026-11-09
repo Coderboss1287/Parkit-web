@@ -12,9 +12,7 @@ import {
   Eye,
   EyeOff,
   CheckCircle2,
-  ArrowRight,
-  UserPlus,
-  LogIn
+  ArrowRight
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import ParkitLogo from "./ParkitLogo";
@@ -165,55 +163,17 @@ export default function AuthModal({ isOpen, onClose, initialMode }) {
           </div>
 
           <div className="p-5 sm:p-7 overflow-y-auto">
-            {/* Primary Navigation Segmented Tabs: Sign Up (Primary) vs Log In */}
-            {authMode !== "forgot" && (
-              <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-2xl mb-6 border border-slate-200/80">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthMode("signup");
-                    setErrorMessage("");
-                    setSuccessMessage("");
-                  }}
-                  className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
-                    authMode === "signup"
-                      ? "bg-white text-parkit-royal shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  <UserPlus className="w-3.5 h-3.5" />
-                  <span>Sign Up (New User)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthMode("login");
-                    setErrorMessage("");
-                    setSuccessMessage("");
-                  }}
-                  className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
-                    authMode === "login"
-                      ? "bg-white text-parkit-royal shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  <LogIn className="w-3.5 h-3.5" />
-                  <span>Log In (Existing)</span>
-                </button>
-              </div>
-            )}
-
             <div className="mb-5 text-center">
               <h2 className="text-xl sm:text-2xl font-black text-parkit-dark tracking-tight">
                 {authMode === "forgot"
                   ? "Reset Your Password"
                   : authMode === "signup"
                   ? "Create Your Account"
-                  : "Welcome Back to PARKIT"}
+                  : "Welcome to PARKIT"}
               </h2>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
                 {authMode === "signup" && "New users must sign up before logging in"}
-                {authMode === "login" && "Log in to access your registered parking spaces and bookings"}
+                {authMode === "login" && "Enter your registered email and password to log in to your account"}
                 {authMode === "forgot" && "Enter your registered email to receive a password reset link"}
               </p>
             </div>
@@ -480,14 +440,15 @@ export default function AuthModal({ isOpen, onClose, initialMode }) {
                 <p>
                   Don't have an account?{" "}
                   <button
+                    type="button"
                     onClick={() => {
                       setAuthMode("signup");
                       setErrorMessage("");
                       setSuccessMessage("");
                     }}
-                    className="text-parkit-royal font-bold hover:underline"
+                    className="text-parkit-royal font-bold hover:underline ml-1"
                   >
-                    Sign up now
+                    Sign Up Free
                   </button>
                 </p>
               )}
