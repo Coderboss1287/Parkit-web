@@ -8,14 +8,14 @@ export default function PurposeSelection() {
   const { user, changeMode } = useApp();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F7FAFC] via-[#EDF4FC] to-[#E2EEFC] flex flex-col justify-between p-6 md:p-12 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#F7FAFC] via-[#EDF4FC] to-[#E2EEFC] flex flex-col justify-between p-4 sm:p-6 md:p-12 relative overflow-hidden">
       {/* Decorative Geometric Background Gradients */}
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-parkit-sky/15 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-parkit-green/15 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-parkit-royal/5 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header with Logo */}
-      <header className="relative z-10 flex items-center justify-between max-w-6xl mx-auto w-full">
+      <header className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 max-w-6xl mx-auto w-full">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center">
             <ParkitLogo className="w-full h-full object-contain" />
@@ -33,28 +33,29 @@ export default function PurposeSelection() {
         </div>
 
         {/* User greeting */}
-        <div className="flex items-center gap-2 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full border border-slate-200 shadow-sm text-xs font-semibold text-slate-700">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-          <span>Signed in as <strong className="text-parkit-royal">{user?.name || "Demo User"}</strong></span>
+        <div className="flex items-center gap-2 bg-white/80 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-slate-200 shadow-sm text-xs font-semibold text-slate-700 max-w-full">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping flex-shrink-0" />
+          <span className="truncate">Signed in as <strong className="text-parkit-royal">{user?.name || "Demo User"}</strong></span>
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="relative z-10 max-w-5xl mx-auto w-full my-auto py-8">
-        <div className="text-center mb-10 md:mb-14">
+      <main className="relative z-10 max-w-5xl mx-auto w-full my-auto py-6 sm:py-8">
+        <div className="text-center mb-8 sm:mb-10 md:mb-14">
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-parkit-royal text-xs font-bold uppercase tracking-wider mb-4"
+            className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-parkit-royal text-[11px] sm:text-xs font-bold uppercase tracking-wider mb-3.5 sm:mb-4"
           >
-            <Sparkles className="w-3.5 h-3.5 text-parkit-sky" />
-            Two-Sided Smart Parking Ecosystem
+            <Sparkles className="w-3.5 h-3.5 text-parkit-sky flex-shrink-0" />
+            <span>Two-Sided Smart Parking Ecosystem</span>
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-3xl md:text-5xl lg:text-6xl font-black text-parkit-dark tracking-tight"
+            className="font-black text-parkit-dark tracking-tight leading-[1.15]"
+            style={{ fontSize: "clamp(1.75rem, 6.5vw, 3.75rem)" }}
           >
             WHAT WOULD YOU LIKE <br className="hidden sm:inline" />
             TO DO TODAY?
@@ -63,19 +64,19 @@ export default function PurposeSelection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-slate-600 text-sm md:text-base max-w-xl mx-auto mt-3"
+            className="text-slate-600 text-xs sm:text-sm md:text-base max-w-xl mx-auto mt-2.5 sm:mt-3 px-1"
           >
             Select an action to launch your customized workspace. You can switch between Renter and Host modes anytime.
           </motion.p>
         </div>
 
         {/* The Two Main Interactive Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 md:gap-8">
           {/* CARD 1: GIVE TO RENT */}
           <motion.div
             whileHover={{ y: -8, scale: 1.015 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            className="group relative bg-white rounded-3xl p-8 md:p-10 shadow-premium-lg border-2 border-transparent hover:border-parkit-green/60 transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer"
+            className="group relative bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-10 shadow-premium-lg border-2 border-transparent hover:border-parkit-green/60 transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer"
             onClick={() => changeMode("give_to_rent")}
           >
             {/* Ambient hover glow */}
@@ -128,7 +129,7 @@ export default function PurposeSelection() {
           <motion.div
             whileHover={{ y: -8, scale: 1.015 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            className="group relative bg-white rounded-3xl p-8 md:p-10 shadow-premium-lg border-2 border-transparent hover:border-parkit-sky/60 transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer"
+            className="group relative bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-10 shadow-premium-lg border-2 border-transparent hover:border-parkit-sky/60 transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer"
             onClick={() => changeMode("rent_it")}
           >
             {/* Ambient hover glow */}

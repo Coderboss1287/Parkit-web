@@ -63,22 +63,22 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#F7FAFC] overflow-x-hidden">
       {/* 1. CINEMATIC HERO SECTION */}
-      <section className="relative min-h-[90vh] flex flex-col justify-center pt-8 pb-16 px-4 sm:px-6 lg:px-8 overflow-hidden bg-gradient-to-b from-[#EDF5FD] via-[#F4F8FC] to-[#F7FAFC]">
+      <section className="relative min-h-[calc(100vh-5rem)] flex flex-col justify-center pt-8 sm:pt-14 pb-12 sm:pb-20 px-3.5 sm:px-6 lg:px-8 overflow-hidden bg-gradient-to-b from-[#EDF5FD] via-[#F4F8FC] to-[#F7FAFC]">
         {/* Animated Background Geometric Elements */}
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-parkit-sky/20 to-parkit-royal/10 rounded-full blur-3xl pointer-events-none -mr-48 -mt-48" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-parkit-green/15 rounded-full blur-3xl pointer-events-none -ml-36" />
+        <div className="absolute top-0 right-0 w-[320px] sm:w-[600px] h-[320px] sm:h-[600px] bg-gradient-to-br from-parkit-sky/20 to-parkit-royal/10 rounded-full blur-3xl pointer-events-none -mr-32 sm:-mr-48 -mt-32 sm:-mt-48" />
+        <div className="absolute bottom-0 left-0 w-[280px] sm:w-[500px] h-[280px] sm:h-[500px] bg-parkit-green/15 rounded-full blur-3xl pointer-events-none -ml-24 sm:-ml-36" />
 
         <div className="max-w-7xl mx-auto w-full relative z-10">
-          <div className="text-center max-w-3xl mx-auto mb-10">
+          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10 px-1 sm:px-0">
             {/* Animated Tagline Pill */}
             <motion.div
               initial={{ opacity: 0, y: -15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-slate-200 shadow-sm text-xs font-bold text-parkit-royal uppercase tracking-wider mb-5"
+              className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-slate-200 shadow-sm text-[10.5px] sm:text-xs font-bold text-parkit-royal uppercase tracking-wide sm:tracking-wider mb-4 sm:mb-5 max-w-full"
             >
-              <span className="w-2 h-2 rounded-full bg-parkit-green animate-ping" />
-              <span>FIND IT • RENT IT • PARK IT</span>
+              <span className="w-2 h-2 rounded-full bg-parkit-green animate-ping flex-shrink-0" />
+              <span className="truncate">FIND IT • RENT IT • PARK IT</span>
             </motion.div>
 
             {/* Main Headline */}
@@ -86,9 +86,10 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-4xl sm:text-6xl lg:text-7xl font-black text-parkit-dark tracking-tight leading-[1.1]"
+              className="font-black text-parkit-dark tracking-tight leading-[1.14] break-words"
+              style={{ fontSize: "clamp(1.9rem, 7.5vw, 4.25rem)" }}
             >
-              Your Space. Your Spot. <br />
+              Your Space. Your Spot. <br className="hidden sm:inline" />
               <span className="bg-gradient-to-r from-parkit-royal via-parkit-sky to-parkit-green bg-clip-text text-transparent">
                 Your PARKIT.
               </span>
@@ -99,7 +100,7 @@ export default function LandingPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="mt-4 text-base sm:text-xl text-slate-600 font-medium max-w-2xl mx-auto"
+              className="mt-3.5 sm:mt-4 text-xs sm:text-base lg:text-lg text-slate-600 font-medium max-w-2xl mx-auto px-1 sm:px-0 leading-relaxed"
             >
               Find parking nearby or turn your empty parking space into income. Guaranteed reservations across Mumbai, Navi Mumbai, and Thane.
             </motion.p>
@@ -109,22 +110,22 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-wrap items-center justify-center gap-4 mt-8"
+              className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 mt-6 sm:mt-8 w-full max-w-xs sm:max-w-none mx-auto"
             >
               <button
                 onClick={() => changeMode("rent_it")}
-                className="px-8 py-4 bg-gradient-to-r from-parkit-royal to-parkit-sky hover:from-[#064294] hover:to-[#2298d4] text-white font-extrabold text-base rounded-2xl shadow-glow-royal hover:scale-105 active:scale-95 transition flex items-center gap-2.5"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-gradient-to-r from-parkit-royal to-parkit-sky hover:from-[#064294] hover:to-[#2298d4] text-white font-extrabold text-sm sm:text-base rounded-2xl shadow-glow-royal hover:scale-105 active:scale-95 transition flex items-center justify-center gap-2.5"
               >
-                <Car className="w-5 h-5" />
+                <Car className="w-5 h-5 flex-shrink-0" />
                 <span>Find Parking</span>
-                <ArrowRight className="w-4 h-4 ml-1" />
+                <ArrowRight className="w-4 h-4 ml-0.5 flex-shrink-0" />
               </button>
 
               <button
                 onClick={() => changeMode("give_to_rent")}
-                className="px-8 py-4 bg-white hover:bg-slate-50 text-slate-800 font-extrabold text-base rounded-2xl border-2 border-slate-200 hover:border-parkit-green shadow-sm hover:scale-105 active:scale-95 transition flex items-center gap-2.5"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-white hover:bg-slate-50 text-slate-800 font-extrabold text-sm sm:text-base rounded-2xl border-2 border-slate-200 hover:border-parkit-green shadow-sm hover:scale-105 active:scale-95 transition flex items-center justify-center gap-2.5"
               >
-                <Building2 className="w-5 h-5 text-emerald-600" />
+                <Building2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                 <span>List Your Space</span>
               </button>
             </motion.div>
@@ -135,13 +136,13 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.4 }}
-            className="max-w-4xl mx-auto bg-white rounded-3xl p-4 sm:p-6 shadow-premium-lg border border-slate-200/90"
+            className="max-w-4xl mx-auto bg-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 shadow-premium-lg border border-slate-200/90 w-full"
           >
-            <form onSubmit={handleHeroSearch} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <form onSubmit={handleHeroSearch} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <div>
                 <label className="block text-[11px] font-extrabold uppercase text-slate-500 mb-1 flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-parkit-royal" />
-                  Select City / Locality
+                  <MapPin className="w-3.5 h-3.5 text-parkit-royal flex-shrink-0" />
+                  <span>Select City / Locality</span>
                 </label>
                 <select
                   value={locality}
@@ -158,36 +159,36 @@ export default function LandingPage() {
 
               <div>
                 <label className="block text-[11px] font-extrabold uppercase text-slate-500 mb-1 flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5 text-parkit-royal" />
-                  Parking Date
+                  <Calendar className="w-3.5 h-3.5 text-parkit-royal flex-shrink-0" />
+                  <span>Parking Date</span>
                 </label>
                 <input
                   type="date"
                   value={date}
                   min={new Date().toISOString().split("T")[0]}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-parkit-sky focus:bg-white"
                 />
               </div>
 
               <div>
                 <label className="block text-[11px] font-extrabold uppercase text-slate-500 mb-1 flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5 text-parkit-royal" />
-                  Start & End Hours
+                  <Clock className="w-3.5 h-3.5 text-parkit-royal flex-shrink-0" />
+                  <span>Start & End Hours</span>
                 </label>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5 w-full">
                   <input
                     type="time"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
-                    className="w-1/2 px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800"
+                    className="flex-1 min-w-0 px-2 sm:px-2.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 text-center focus:outline-none focus:ring-2 focus:ring-parkit-sky focus:bg-white"
                   />
-                  <span className="text-slate-400 text-xs">-</span>
+                  <span className="text-slate-400 text-xs font-bold px-0.5">-</span>
                   <input
                     type="time"
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
-                    className="w-1/2 px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800"
+                    className="flex-1 min-w-0 px-2 sm:px-2.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 text-center focus:outline-none focus:ring-2 focus:ring-parkit-sky focus:bg-white"
                   />
                 </div>
               </div>
@@ -195,9 +196,9 @@ export default function LandingPage() {
               <div className="flex items-end">
                 <button
                   type="submit"
-                  className="w-full py-3 bg-gradient-to-r from-parkit-royal to-parkit-sky hover:opacity-95 text-white font-extrabold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2"
+                  className="w-full py-3 sm:py-3.5 bg-gradient-to-r from-parkit-royal to-parkit-sky hover:opacity-95 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md transition flex items-center justify-center gap-2 active:scale-98"
                 >
-                  <Search className="w-4 h-4" />
+                  <Search className="w-4 h-4 flex-shrink-0" />
                   <span>Search Parking</span>
                 </button>
               </div>
