@@ -148,7 +148,8 @@ class AtlasMapsClient {
     const isBackendUp = await this.checkBackendHealth();
     if (isBackendUp) {
       try {
-        const url = new URL(`${this.baseUrl}/v1/geocode/search`);
+        const baseOrigin = typeof window !== "undefined" ? window.location.origin : "http://localhost:5173";
+        const url = new URL(`${this.baseUrl}/v1/geocode/search`, baseOrigin);
         url.searchParams.set("q", query);
         url.searchParams.set("limit", String(limit));
         if (countryCodes) url.searchParams.set("country_codes", countryCodes);

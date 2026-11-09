@@ -31,12 +31,17 @@ function AppContent() {
   } = useApp();
 
   const [hasCompletedIntro, setHasCompletedIntro] = useState(() => {
-    // Only show cinematic intro on fresh launch
-    return sessionStorage.getItem("parkit_intro_done") === "true";
+    try {
+      return sessionStorage.getItem("parkit_intro_done") === "true";
+    } catch {
+      return false;
+    }
   });
 
   const handleCompleteIntro = () => {
-    sessionStorage.setItem("parkit_intro_done", "true");
+    try {
+      sessionStorage.setItem("parkit_intro_done", "true");
+    } catch {}
     setHasCompletedIntro(true);
 
     // If not authenticated, open auth prompt
