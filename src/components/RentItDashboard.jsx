@@ -15,22 +15,22 @@ import {
   Layers,
   ChevronDown,
   Navigation,
-  Bot
+  Bot,
+  LocateFixed
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { PARKING_CATEGORIES, LOCALITIES_MUMBAI, VEHICLE_TYPES } from "../data/categories";
 import {
-  generateHexagonalRings,
-  findListingsInCell,
-  getDistanceMeters
+  calculateHaversineDistanceKm,
+  discoverHexBalancedParking
 } from "../utils/hexagonalSearch";
 import InteractiveMap from "./InteractiveMap";
-import HexagonalRadar from "./HexagonalRadar";
 import ParkingCard from "./ParkingCard";
 import ParkingDetailsModal from "./ParkingDetailsModal";
 import BookingModal from "./BookingModal";
 import ChatModal from "./ChatModal";
 import CallModal from "./CallModal";
+import atlasMaps from "../services/atlasMapsClient";
 
 export default function RentItDashboard() {
   const {
@@ -43,12 +43,16 @@ export default function RentItDashboard() {
     setChatListing,
     callListing,
     setCallListing,
-    setShowAIAssistant
+    setShowAIAssistant,
+    userLocation,
+    setUserLocation,
+    setNearbyDynamicSpots
   } = useApp();
 
   // Search & Filter State
   const [selectedLocality, setSelectedLocality] = useState("All Localities");
   const [searchCoords, setSearchCoords] = useState({ lat: 19.0760, lng: 72.8777 });
+  const [isLocating, setIsLocating] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedVehicleType, setSelectedVehicleType] = useState("four_wheeler");
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split("T")[0]);
@@ -62,82 +66,97 @@ export default function RentItDashboard() {
 
   // View state: 'split' | 'map' | 'list'
   const [viewMode, setViewMode] = useState("split");
-
-  // Hexagonal Search State
-  const [isHexSearchActive, setIsHexSearchActive] = useState(false);
-  const [currentRing, setCurrentRing] = useState(0);
-  const [maxSearchRadius, setMaxSearchRadius] = useState(1000);
-  const [hexRings, setHexRings] = useState([]);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  // Initialize or update Hexagonal Grid when coordinates change
+  // ATLAS Engine State: Geocoder & Active In-App Route
+  const [atlasSearchQuery, setAtlasSearchQuery] = useState("");
+  const [atlasResults, setAtlasResults] = useState([]);
+  const [isSearchingAtlas, setIsSearchingAtlas] = useState(false);
+  const [showAtlasDropdown, setShowAtlasDropdown] = useState(false);
+  const [activeRoute, setActiveRoute] = useState(null);
+
+  // Core handler: runs invisible hexagonal ring search engine on coordinates
+  const applyCoordinates = async (coords, localityLabel = "📍 My Current Location (GPS)", isLiveGps = false) => {
+    setSearchCoords({ lat: coords.lat, lng: coords.lng, isLiveLocation: isLiveGps });
+    setSelectedLocality(localityLabel);
+
+    if (isLiveGps) {
+      setUserLocation({ lat: coords.lat, lng: coords.lng });
+    }
+
+    try {
+      // Invisible Hexagonal Ring Search Engine (Ring 0, Ring 1, Ring 2 axial math + OSM Overpass API)
+      const balancedSpots = await discoverHexBalancedParking(coords.lat, coords.lng, localityLabel);
+      if (balancedSpots && balancedSpots.length > 0) {
+        setNearbyDynamicSpots(balancedSpots);
+      }
+    } catch (err) {
+      console.error("Invisible hexagonal search error:", err);
+    }
+  };
+
+  // Live Geolocation Auto-Detect when page loads
   useEffect(() => {
-    const rings = generateHexagonalRings(searchCoords.lat, searchCoords.lng, 90, 3);
-    setHexRings(rings);
-    setCurrentRing(0);
-  }, [searchCoords]);
+    if (!navigator.geolocation) return;
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setIsLocating(false);
+        const { latitude, longitude } = pos.coords;
+        applyCoordinates({ lat: latitude, lng: longitude }, "📍 My Current Location (GPS)", true);
+      },
+      (err) => {
+        setIsLocating(false);
+        console.log("Geolocation auto-detect status:", err.message);
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+    );
+  }, []);
+
+  // Triggered when user clicks "My Location" button
+  const handleTriggerGeolocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setIsLocating(false);
+        const { latitude, longitude } = pos.coords;
+        applyCoordinates({ lat: latitude, lng: longitude }, "📍 My Current Location (GPS)", true);
+      },
+      (err) => {
+        setIsLocating(false);
+        alert("Location access was denied or unavailable. You can select a locality from the dropdown.");
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
+  // Two-way sync: scroll card into view in sidebar when selectedListing changes
+  useEffect(() => {
+    if (selectedListing) {
+      const cardEl = document.getElementById(`parking-card-${selectedListing.id}`);
+      if (cardEl) {
+        cardEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    }
+  }, [selectedListing]);
 
   // Handle Locality Dropdown Selection
   const handleLocalitySelect = (localityName) => {
     setSelectedLocality(localityName);
+    if (localityName.includes("My Current Location") && userLocation) {
+      applyCoordinates(userLocation, "📍 My Current Location (GPS)", true);
+      return;
+    }
     const loc = LOCALITIES_MUMBAI.find((l) => l.name === localityName);
     if (loc) {
-      setSearchCoords({ lat: loc.lat, lng: loc.lng });
+      applyCoordinates({ lat: loc.lat, lng: loc.lng }, loc.name, false);
     }
-  };
-
-  // Run Hexagonal Spiral Search Step-by-Step
-  const handleStartHexSearch = () => {
-    setIsHexSearchActive(true);
-    setCurrentRing(0);
-
-    const stepInterval = setInterval(() => {
-      setCurrentRing((prevRing) => {
-        const nextRing = prevRing + 1;
-        if (nextRing > 3) {
-          clearInterval(stepInterval);
-          setIsHexSearchActive(false);
-          return 3;
-        }
-
-        // Update cells status for nextRing
-        setHexRings((prevRings) =>
-          prevRings.map((ringObj) => {
-            if (ringObj.ringNumber === nextRing) {
-              const updatedCells = ringObj.cells.map((cell) => {
-                const matches = findListingsInCell(cell, listings, {
-                  category: selectedCategory,
-                  vehicleType: selectedVehicleType,
-                  maxPrice,
-                  isCovered: filterCoveredOnly,
-                  hasEV: filterEVOnly,
-                  hasSecurity: filterSecurityOnly,
-                  requireAvailableOnly: filterAvailableOnly
-                });
-                return {
-                  ...cell,
-                  status: matches.length > 0 ? "found" : "empty",
-                  matchingListings: matches
-                };
-              });
-              return { ...ringObj, cells: updatedCells };
-            }
-            return ringObj;
-          })
-        );
-
-        return nextRing;
-      });
-    }, 700);
-  };
-
-  const handleStopHexSearch = () => {
-    setIsHexSearchActive(false);
-  };
-
-  const handleExpandRings = () => {
-    setMaxSearchRadius(2000);
-    handleStartHexSearch();
   };
 
   // Filter listings based on current controls
@@ -154,10 +173,14 @@ export default function RentItDashboard() {
         return true;
       })
       .map((l) => {
-        const dist = getDistanceMeters(searchCoords.lat, searchCoords.lng, l.lat, l.lng);
-        return { ...l, distanceMeters: dist };
+        const distKm = calculateHaversineDistanceKm(searchCoords.lat, searchCoords.lng, l.lat, l.lng);
+        return {
+          ...l,
+          distanceKm: distKm,
+          distanceMeters: Math.round(distKm * 1000)
+        };
       })
-      .sort((a, b) => a.distanceMeters - b.distanceMeters);
+      .sort((a, b) => a.distanceKm - b.distanceKm);
   }, [
     listings,
     selectedCategory,
@@ -170,9 +193,60 @@ export default function RentItDashboard() {
     searchCoords
   ]);
 
-  const handleGetDirections = (listing) => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${listing.lat},${listing.lng}`;
-    window.open(url, "_blank");
+  // ATLAS Geocoder Search Handler
+  const handleAtlasSearch = async (e) => {
+    if (e) e.preventDefault();
+    if (!atlasSearchQuery.trim()) return;
+
+    setIsSearchingAtlas(true);
+    setShowAtlasDropdown(true);
+    try {
+      const results = await atlasMaps.geocodeSearch(atlasSearchQuery, 5);
+      setAtlasResults(results);
+      if (results.length > 0) {
+        // Automatically pin first result if user hit enter
+        const top = results[0];
+        applyCoordinates({ lat: top.lat, lng: top.lng }, top.name || top.displayName, false);
+      }
+    } catch (err) {
+      console.error("ATLAS Search error:", err);
+    } finally {
+      setIsSearchingAtlas(false);
+    }
+  };
+
+  const handleSelectAtlasResult = (res) => {
+    setAtlasSearchQuery(res.name || res.displayName);
+    setShowAtlasDropdown(false);
+    applyCoordinates({ lat: res.lat, lng: res.lng }, res.name || res.displayName, false);
+  };
+
+  // In-App ATLAS Route Calculation
+  const handleGetDirections = async (listing) => {
+    setSelectedListing(listing);
+    setViewMode("split"); // Switch to split so map is visible
+    const origin = userLocation || searchCoords || { lat: 19.0760, lng: 72.8777 };
+
+    try {
+      const res = await atlasMaps.calculateRoute(
+        origin.lat,
+        origin.lng,
+        listing.lat,
+        listing.lng,
+        "driving"
+      );
+      setActiveRoute({
+        ...res,
+        destinationTitle: listing.title,
+        destinationAddress: listing.address,
+        targetListing: listing
+      });
+    } catch (err) {
+      console.error("ATLAS route calculation error:", err);
+      // Fallback: open external map if completely offline
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${listing.lat},${listing.lng}`;
+      window.open(url, "_blank");
+    }
   };
 
   return (
@@ -232,19 +306,102 @@ export default function RentItDashboard() {
             </div>
           </div>
 
+          {/* ATLAS Live Geocoding Search Bar */}
+          <div className="relative pt-1">
+            <form onSubmit={handleAtlasSearch} className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={atlasSearchQuery}
+                  onChange={(e) => {
+                    setAtlasSearchQuery(e.target.value);
+                    if (!showAtlasDropdown && e.target.value.length > 2) {
+                      setShowAtlasDropdown(true);
+                    }
+                  }}
+                  onFocus={() => {
+                    if (atlasResults.length > 0) setShowAtlasDropdown(true);
+                  }}
+                  placeholder="ATLAS Geocoder (/v1/geocode/search): Search any street, railway station, or landmark in Mumbai & Navi Mumbai..."
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-parkit-sky focus:bg-white shadow-inner transition"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isSearchingAtlas}
+                className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-parkit-royal to-parkit-sky text-white text-xs font-extrabold shadow-md hover:opacity-95 transition flex items-center gap-1.5 flex-shrink-0 cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-cyan-200" />
+                <span>{isSearchingAtlas ? "Geocoding..." : "ATLAS Search"}</span>
+              </button>
+            </form>
+
+            {/* Autocomplete Suggestions Dropdown */}
+            {showAtlasDropdown && atlasResults.length > 0 && (
+              <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden divide-y divide-slate-100 max-h-60 overflow-y-auto">
+                <div className="px-3.5 py-1.5 bg-slate-50 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                  <span>ATLAS Geocoder Suggestions</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowAtlasDropdown(false)}
+                    className="text-slate-400 hover:text-slate-700"
+                  >
+                    Close
+                  </button>
+                </div>
+                {atlasResults.map((item, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleSelectAtlasResult(item)}
+                    className="w-full px-4 py-2.5 text-left text-xs hover:bg-blue-50/80 flex items-start gap-2.5 transition"
+                  >
+                    <MapPin className="w-4 h-4 text-parkit-royal flex-shrink-0 mt-0.5" />
+                    <div className="truncate">
+                      <span className="font-extrabold text-slate-900 block truncate">
+                        {item.name}
+                      </span>
+                      <span className="text-[11px] text-slate-500 block truncate">
+                        {item.displayName}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Primary Filter Strip */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-2">
             {/* Location selector */}
             <div>
-              <label className="block text-[11px] font-extrabold uppercase text-slate-500 mb-1 flex items-center gap-1">
-                <MapPin className="w-3 h-3 text-parkit-royal" />
-                Location / Hub
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[11px] font-extrabold uppercase text-slate-500 flex items-center gap-1">
+                  <MapPin className="w-3 h-3 text-parkit-royal" />
+                  Location / Hub
+                </label>
+                <button
+                  type="button"
+                  onClick={handleTriggerGeolocation}
+                  disabled={isLocating}
+                  className="text-[10px] font-extrabold text-parkit-royal hover:text-blue-700 flex items-center gap-1 transition"
+                  title="Detect Live GPS Location"
+                >
+                  <LocateFixed className={`w-3 h-3 text-parkit-sky ${isLocating ? "animate-spin" : ""}`} />
+                  <span>{isLocating ? "Locating..." : "My Location"}</span>
+                </button>
+              </div>
               <select
                 value={selectedLocality}
                 onChange={(e) => handleLocalitySelect(e.target.value)}
                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-parkit-sky focus:bg-white transition"
               >
+                {(userLocation || selectedLocality.includes("My Current Location")) && (
+                  <option value={selectedLocality.includes("My Current Location") ? selectedLocality : "📍 My Current Location (GPS)"}>
+                    📍 My Current Location (GPS)
+                  </option>
+                )}
                 {LOCALITIES_MUMBAI.map((loc) => (
                   <option key={loc.name} value={loc.name}>
                     {loc.name}
@@ -403,22 +560,6 @@ export default function RentItDashboard() {
 
       {/* Main Workspace Layout */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-        {/* Hexagonal Radar Search Control Banner */}
-        <div className="mb-6">
-          <HexagonalRadar
-            isSearching={isHexSearchActive}
-            currentRing={currentRing}
-            maxRings={3}
-            maxRadiusMeters={maxSearchRadius}
-            onMaxRadiusChange={(r) => setMaxSearchRadius(r)}
-            onStartSearch={handleStartHexSearch}
-            onStopSearch={handleStopHexSearch}
-            onExpandRings={handleExpandRings}
-            foundCount={filteredListings.length}
-            ringsSummary={hexRings}
-          />
-        </div>
-
         {/* View Mode Dispatcher */}
         {viewMode === "split" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -446,7 +587,6 @@ export default function RentItDashboard() {
                     isSelected={selectedListing?.id === listing.id}
                     onSelect={() => {
                       setSelectedListing(listing);
-                      setIsDetailsOpen(true);
                     }}
                     onChat={() => setChatListing(listing)}
                     onCall={() => setCallListing(listing)}
@@ -462,13 +602,18 @@ export default function RentItDashboard() {
                 selectedListing={selectedListing}
                 onSelectListing={(listing) => {
                   setSelectedListing(listing);
+                }}
+                onOpenDetails={(listing) => {
+                  setSelectedListing(listing);
                   setIsDetailsOpen(true);
                 }}
                 searchCoords={searchCoords}
-                onCoordsChange={(coords) => setSearchCoords(coords)}
-                hexRings={hexRings}
-                isHexSearchActive={isHexSearchActive}
+                onCoordsChange={(coords) => applyCoordinates(coords, coords.locality || "Selected Location", coords.isLiveLocation)}
+                userLocation={userLocation}
+                onLocateUser={handleTriggerGeolocation}
                 onGetDirections={handleGetDirections}
+                activeRoute={activeRoute}
+                onClearRoute={() => setActiveRoute(null)}
               />
             </div>
           </div>
@@ -481,13 +626,18 @@ export default function RentItDashboard() {
               selectedListing={selectedListing}
               onSelectListing={(listing) => {
                 setSelectedListing(listing);
+              }}
+              onOpenDetails={(listing) => {
+                setSelectedListing(listing);
                 setIsDetailsOpen(true);
               }}
               searchCoords={searchCoords}
-              onCoordsChange={(coords) => setSearchCoords(coords)}
-              hexRings={hexRings}
-              isHexSearchActive={isHexSearchActive}
+              onCoordsChange={(coords) => applyCoordinates(coords, coords.locality || "Selected Location", coords.isLiveLocation)}
+              userLocation={userLocation}
+              onLocateUser={handleTriggerGeolocation}
               onGetDirections={handleGetDirections}
+              activeRoute={activeRoute}
+              onClearRoute={() => setActiveRoute(null)}
             />
           </div>
         )}
@@ -508,7 +658,6 @@ export default function RentItDashboard() {
                   isSelected={selectedListing?.id === listing.id}
                   onSelect={() => {
                     setSelectedListing(listing);
-                    setIsDetailsOpen(true);
                   }}
                   onChat={() => setChatListing(listing)}
                   onCall={() => setCallListing(listing)}
@@ -536,7 +685,10 @@ export default function RentItDashboard() {
         onChat={(l) => setChatListing(l)}
         onCall={(l) => setCallListing(l)}
         onBook={(l) => setBookingListing(l)}
-        onGetDirections={handleGetDirections}
+        onGetDirections={(l) => {
+          setIsDetailsOpen(false);
+          handleGetDirections(l);
+        }}
       />
 
       <BookingModal

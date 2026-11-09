@@ -19,6 +19,7 @@ import {
 import { useApp } from "../context/AppContext";
 import { calculateRentalTotals } from "../utils/pricingEngine";
 import { VEHICLE_TYPES } from "../data/categories";
+import ParkitLogo from "./ParkitLogo";
 
 export default function BookingModal({ isOpen, onClose, listing }) {
   const { user, createBooking, hasBookingConflict, setShowMyBookings } = useApp();
@@ -89,9 +90,9 @@ export default function BookingModal({ isOpen, onClose, listing }) {
     setPaymentStep("processing");
 
     // Simulate Razorpay test mode payment processing
-    setTimeout(() => {
+    setTimeout(async () => {
       try {
-        const booking = createBooking({
+        const booking = await createBooking({
           listingId: listing.id,
           listingTitle: listing.title,
           category: listing.category,
@@ -139,7 +140,9 @@ export default function BookingModal({ isOpen, onClose, listing }) {
           {/* Header */}
           <div className="bg-gradient-to-r from-parkit-royal to-parkit-sky px-6 py-4 text-white flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <img src="/parkit-icon.svg" alt="PARKIT" className="w-8 h-8 rounded-lg bg-white/10 p-1" />
+              <div className="w-8 h-8 rounded-lg bg-white/10 p-1 flex items-center justify-center">
+                <ParkitLogo className="w-full h-full object-contain" />
+              </div>
               <div>
                 <h3 className="font-extrabold text-sm tracking-tight">
                   {paymentStep === "confirmed" ? "Booking Confirmed" : "Transparent Checkout"}

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useApp } from "../context/AppContext";
+import ParkitLogo from "./ParkitLogo";
 import {
   Car,
   Building2,
@@ -55,10 +56,8 @@ export default function Navbar() {
             onClick={() => changeMode("landing")}
             className="flex items-center gap-3 cursor-pointer group"
           >
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-parkit-royal to-parkit-sky p-0.5 shadow-md shadow-blue-500/15 group-hover:scale-105 transition-transform flex items-center justify-center">
-              <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center p-1.5">
-                <img src="/parkit-icon.svg" alt="PARKIT Logo" className="w-full h-full object-contain" />
-              </div>
+            <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center">
+              <ParkitLogo className="w-full h-full object-contain group-hover:scale-105 transition-transform" />
             </div>
 
             <div>
@@ -117,6 +116,15 @@ export default function Navbar() {
             {/* Currency Pill */}
             <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
               <span>₹ INR</span>
+            </div>
+
+            {/* ATLAS MAPS API Engine Pill */}
+            <div
+              className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-cyan-300 text-[11px] font-mono shadow-sm"
+              title="ATLAS MAPS API: Hybrid Dual-Mode Engine Active (X-API-Key Enabled)"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+              <span>ATLAS MAPS API</span>
             </div>
 
             {/* AI Assistant Button */}

@@ -1,6 +1,7 @@
 import React from "react";
 import { ShieldCheck, Mail, Phone, MapPin, IndianRupee, Heart } from "lucide-react";
 import { useApp } from "../context/AppContext";
+import ParkitLogo from "./ParkitLogo";
 
 export default function Footer() {
   const { changeMode } = useApp();
@@ -13,7 +14,7 @@ export default function Footer() {
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-white/10 p-2 flex items-center justify-center border border-white/20">
-                <img src="/parkit-icon.svg" alt="PARKIT" className="w-full h-full object-contain" />
+                <ParkitLogo className="w-full h-full object-contain" />
               </div>
               <div>
                 <div className="flex items-center gap-1">

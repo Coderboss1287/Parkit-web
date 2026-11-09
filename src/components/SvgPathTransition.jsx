@@ -1,5 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import ParkitLogo from "./ParkitLogo";
 
 /**
  * Animated SVG Path Effect inspired by the user's reference video.
@@ -64,7 +65,7 @@ export default function SvgPathTransition({ isActive }) {
             className="relative z-10 flex flex-col items-center justify-center text-white"
           >
             <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md p-3 shadow-2xl flex items-center justify-center border border-white/30 mb-3">
-              <img src="/parkit-icon.svg" alt="PARKIT" className="w-full h-full object-contain filter drop-shadow-md" />
+              <ParkitLogo className="w-full h-full object-contain filter drop-shadow-md" />
             </div>
             <div className="text-2xl font-black tracking-tight text-white flex items-center gap-1.5">
               <span>PARK</span>

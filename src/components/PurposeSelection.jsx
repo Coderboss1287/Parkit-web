@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Building2, Car, ArrowRight, ShieldCheck, IndianRupee, Sparkles, Navigation } from "lucide-react";
 import { useApp } from "../context/AppContext";
+import ParkitLogo from "./ParkitLogo";
 
 export default function PurposeSelection() {
   const { user, changeMode } = useApp();
@@ -16,8 +17,8 @@ export default function PurposeSelection() {
       {/* Header with Logo */}
       <header className="relative z-10 flex items-center justify-between max-w-6xl mx-auto w-full">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-white shadow-premium p-2 flex items-center justify-center border border-slate-100">
-            <img src="/parkit-icon.svg" alt="PARKIT" className="w-full h-full object-contain" />
+          <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center">
+            <ParkitLogo className="w-full h-full object-contain" />
           </div>
           <div>
             <div className="flex items-center gap-1">

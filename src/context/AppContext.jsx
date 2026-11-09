@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { INITIAL_SAMPLE_LISTINGS } from "../data/sampleListings";
+import { atlasMaps } from "../services/atlasMapsClient";
 
 const AppContext = createContext();
 
@@ -141,6 +142,69 @@ export function AppProvider({ children }) {
   const [showMyBookings, setShowMyBookings] = useState(false);
   const [showAddListing, setShowAddListing] = useState(false);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
+  // User live geolocation state
+  const [userLocation, setUserLocation] = useState(null);
+
+  // Helper to cleanly merge/update dynamically generated nearby listings without duplicates
+  const setNearbyDynamicSpots = (spots) => {
+    setListings((prev) => {
+      const nonDynamic = prev.filter((item) => !item.id.startsWith("pkt-nearby-"));
+      return [...spots, ...nonDynamic];
+    });
+  };
+
+  // Sync with persistent SQLite database on mount
+  useEffect(() => {
+    let isMounted = true;
+    async function initDatabaseSync() {
+      try {
+        const [dbListings, dbBookings] = await Promise.all([
+          atlasMaps.fetchListings(),
+          atlasMaps.fetchBookings()
+        ]);
+        if (isMounted) {
+          if (Array.isArray(dbListings) && dbListings.length > 0) {
+            setListings((prev) => {
+              const dynamic = prev.filter((item) => item.id.startsWith("pkt-nearby-"));
+              return [...dynamic, ...dbListings];
+            });
+          }
+          if (Array.isArray(dbBookings) && dbBookings.length > 0) {
+            setBookings(dbBookings);
+          }
+        }
+      } catch (err) {
+        console.warn("Initial database sync deferred:", err);
+      }
+    }
+    initDatabaseSync();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Fetch persistent chat messages when a chat is opened for a listing
+  useEffect(() => {
+    if (!chatListing?.id) return;
+    let isMounted = true;
+    async function loadChatMessages() {
+      try {
+        const dbMsgs = await atlasMaps.fetchMessages(chatListing.id);
+        if (isMounted && Array.isArray(dbMsgs) && dbMsgs.length > 0) {
+          setMessages((prev) => ({
+            ...prev,
+            [chatListing.id]: dbMsgs
+          }));
+        }
+      } catch (err) {
+        console.warn("Failed to load chat messages from DB:", err);
+      }
+    }
+    loadChatMessages();
+    return () => {
+      isMounted = false;
+    };
+  }, [chatListing]);
 
   // Sync to localStorage
   useEffect(() => {
@@ -176,17 +240,44 @@ export function AppProvider({ children }) {
   };
 
   // Auth actions
-  const login = (userData) => {
-    const defaultUser = {
+  const login = async (userData) => {
+    const email = (userData?.email || "demo@parkit.in").trim().toLowerCase();
+    const name = userData?.name || "Demo User";
+    const phone = userData?.phone || "+91 98200 00000";
+
+    let loggedInUser = {
       id: "usr-" + Date.now(),
-      name: userData?.name || "Demo User",
-      email: userData?.email || "demo@parkit.in",
+      name,
+      email,
+      phone,
       role: "all",
       isDemo: true
     };
-    setUser(defaultUser);
+
+    try {
+      const dbUser = await atlasMaps.loginUser({
+        name,
+        email,
+        phone,
+        password: userData?.password,
+        confirmPassword: userData?.confirmPassword,
+        authMode: userData?.authMode || "login",
+        role: "all"
+      });
+      if (dbUser && dbUser.id) {
+        loggedInUser = { ...loggedInUser, ...dbUser };
+      }
+    } catch (err) {
+      if (err.status === 400 || err.status === 401) {
+        throw err;
+      }
+      console.warn("Backend login failed, using local user session:", err);
+    }
+
+    setUser(loggedInUser);
     setShowAuthModal(false);
     changeMode(authRedirectMode || "purpose_select");
+    return loggedInUser;
   };
 
   const logout = () => {
@@ -195,10 +286,11 @@ export function AppProvider({ children }) {
   };
 
   // Add Listing
-  const addListing = (newListingData) => {
-    const newListing = {
+  const addListing = async (newListingData) => {
+    const listingId = "pkt-" + Date.now().toString(36);
+    const localListing = {
       ...newListingData,
-      id: "pkt-" + Date.now().toString(36),
+      id: listingId,
       rating: 5.0,
       reviewCount: 1,
       isAvailable: true,
@@ -206,27 +298,59 @@ export function AppProvider({ children }) {
         id: user?.id || "own-demo",
         name: user?.name || "Current Host",
         type: "Verified Owner",
-        phone: "+91 98200 XXXXX",
+        phone: user?.phone || "+91 98200 XXXXX",
         maskedPhone: "+91 98200 •••••",
         verified: true,
         responseRate: "100%",
         responseTime: "< 5 mins"
       }
     };
-    setListings((prev) => [newListing, ...prev]);
-    return newListing;
+
+    setListings((prev) => [localListing, ...prev]);
+
+    try {
+      const createdInDb = await atlasMaps.createListing({
+        ...localListing,
+        hourlyPrice: Number(localListing.hourlyPrice || 50),
+        dailyPrice: Number(localListing.dailyPrice || (localListing.hourlyPrice * 8)),
+        monthlyPrice: Number(localListing.monthlyPrice || (localListing.hourlyPrice * 120)),
+        lat: Number(localListing.lat || 19.0760),
+        lng: Number(localListing.lng || 72.8777)
+      });
+      if (createdInDb && createdInDb.id) {
+        setListings((prev) =>
+          prev.map((item) => (item.id === listingId ? createdInDb : item))
+        );
+        return createdInDb;
+      }
+    } catch (err) {
+      console.warn("Backend createListing sync deferred:", err);
+    }
+
+    return localListing;
   };
 
   // Update Listing
-  const updateListing = (id, updatedFields) => {
+  const updateListing = async (id, updatedFields) => {
     setListings((prev) =>
       prev.map((item) => (item.id === id ? { ...item, ...updatedFields } : item))
     );
+
+    try {
+      await atlasMaps.updateListing(id, updatedFields);
+    } catch (err) {
+      console.warn("Backend updateListing sync deferred:", err);
+    }
   };
 
   // Delete Listing
-  const deleteListing = (id) => {
+  const deleteListing = async (id) => {
     setListings((prev) => prev.filter((item) => item.id !== id));
+    try {
+      await atlasMaps.deleteListing(id);
+    } catch (err) {
+      console.warn("Backend deleteListing sync deferred:", err);
+    }
   };
 
   // Double booking & slot conflict detection
@@ -241,8 +365,8 @@ export function AppProvider({ children }) {
   };
 
   // Create Booking
-  const createBooking = (bookingData) => {
-    // Check conflicts
+  const createBooking = async (bookingData) => {
+    // 1. Client-side conflict check for instant feedback
     if (
       hasBookingConflict(
         bookingData.listingId,
@@ -252,10 +376,47 @@ export function AppProvider({ children }) {
       )
     ) {
       throw new Error(
-        "This parking slot is already booked for the selected time window. Please choose another slot."
+        "Double-booking prevented: This slot is already booked by another driver for this time window. Please pick another time slot."
       );
     }
 
+    // 2. Persist to database (handles server-side 409 Conflict check)
+    try {
+      const payload = {
+        listingId: bookingData.listingId,
+        listingTitle: bookingData.listingTitle,
+        userEmail: user?.email || bookingData.userEmail || "demo@parkit.in",
+        userName: user?.name || bookingData.userName || "Customer",
+        category: bookingData.category,
+        address: bookingData.address,
+        date: bookingData.date,
+        startTime: bookingData.startTime,
+        endTime: bookingData.endTime,
+        durationHours: Number(bookingData.durationHours || 1),
+        hourlyRate: Number(bookingData.hourlyRate || 50),
+        rentalAmount: Number(bookingData.rentalAmount || 50),
+        platformFee: Number(bookingData.platformFee || 0),
+        totalAmount: Number(bookingData.totalAmount || 50),
+        ownerEarnings: Number(bookingData.ownerEarnings || 0),
+        vehicleType: bookingData.vehicleType || "four_wheeler",
+        vehicleNumber: bookingData.vehicleNumber,
+        ownerName: bookingData.ownerName,
+        ownerPhone: bookingData.ownerPhone
+      };
+
+      const dbBooking = await atlasMaps.createBooking(payload);
+      if (dbBooking && dbBooking.id) {
+        setBookings((prev) => [dbBooking, ...prev]);
+        return dbBooking;
+      }
+    } catch (err) {
+      if (err.status === 409 || err.message?.includes("already booked")) {
+        throw err;
+      }
+      console.warn("Backend createBooking failed, falling back to local booking:", err);
+    }
+
+    // Offline / fallback creation
     const newBooking = {
       ...bookingData,
       id: "PKT-" + Math.floor(1000 + Math.random() * 9000),
@@ -270,21 +431,29 @@ export function AppProvider({ children }) {
   };
 
   // Cancel Booking
-  const cancelBooking = (bookingId) => {
+  const cancelBooking = async (bookingId) => {
     setBookings((prev) =>
       prev.map((b) => (b.id === bookingId ? { ...b, status: "cancelled" } : b))
     );
+
+    try {
+      await atlasMaps.cancelBooking(bookingId);
+    } catch (err) {
+      console.warn("Backend cancelBooking sync deferred:", err);
+    }
   };
 
   // Send Chat Message
-  const sendChatMessage = (listingId, text) => {
+  const sendChatMessage = async (listingId, text) => {
     if (!text.trim()) return;
 
+    const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     const newMsg = {
       id: "msg-" + Date.now(),
       sender: "customer",
+      senderName: user?.name || "Customer",
       text,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      timestamp: timeStr,
       date: "Today"
     };
 
@@ -296,8 +465,20 @@ export function AppProvider({ children }) {
       };
     });
 
+    try {
+      await atlasMaps.sendChatMessage(listingId, {
+        sender: "customer",
+        senderName: user?.name || "Customer",
+        text,
+        timestamp: timeStr,
+        date: "Today"
+      });
+    } catch (err) {
+      console.warn("Backend chat message send deferred:", err);
+    }
+
     // Simulated Owner Auto-Reply after 1.2 seconds for realistic prototype feel
-    setTimeout(() => {
+    setTimeout(async () => {
       const autoResponses = [
         "Yes, the parking space is completely available as listed! You can proceed to book.",
         "Yes, 24/7 security guard is stationed at the gate and will verify your PARKIT PIN code.",
@@ -305,12 +486,14 @@ export function AppProvider({ children }) {
         "Sure, you can extend your duration anytime through the app if no overlapping slot is booked."
       ];
       const randomReply = autoResponses[Math.floor(Math.random() * autoResponses.length)];
+      const replyTimeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
       const replyMsg = {
         id: "msg-reply-" + Date.now(),
         sender: "owner",
+        senderName: "Host / Property Manager",
         text: randomReply,
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        timestamp: replyTimeStr,
         date: "Today"
       };
 
@@ -318,6 +501,18 @@ export function AppProvider({ children }) {
         ...prev,
         [listingId]: [...(prev[listingId] || []), replyMsg]
       }));
+
+      try {
+        await atlasMaps.sendChatMessage(listingId, {
+          sender: "owner",
+          senderName: "Host / Property Manager",
+          text: randomReply,
+          timestamp: replyTimeStr,
+          date: "Today"
+        });
+      } catch (err) {
+        console.warn("Backend owner reply sync deferred:", err);
+      }
     }, 1200);
   };
 
@@ -361,7 +556,10 @@ export function AppProvider({ children }) {
         showAddListing,
         setShowAddListing,
         showAIAssistant,
-        setShowAIAssistant
+        setShowAIAssistant,
+        userLocation,
+        setUserLocation,
+        setNearbyDynamicSpots
       }}
     >
       {children}

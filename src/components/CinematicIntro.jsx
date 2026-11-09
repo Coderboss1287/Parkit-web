@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Navigation, Car, ShieldCheck, ArrowRight } from "lucide-react";
+import ParkitLogo from "./ParkitLogo";
 
 export default function CinematicIntro({ onComplete }) {
   const [step, setStep] = useState(0);
@@ -58,12 +59,8 @@ export default function CinematicIntro({ onComplete }) {
             }}
             className="w-28 h-28 rounded-3xl bg-gradient-to-tr from-[#0752B5] via-[#35B5F6] to-[#75D84C] p-1 shadow-glow-sky relative flex items-center justify-center"
           >
-            <div className="w-full h-full bg-[#0C1A30] rounded-[22px] flex items-center justify-center relative overflow-hidden">
-              <img
-                src="/parkit-icon.svg"
-                alt="PARKIT Icon"
-                className="w-16 h-16 object-contain filter drop-shadow-[0_4px_12px_rgba(53,181,246,0.6)]"
-              />
+            <div className="w-full h-full bg-[#0C1A30] rounded-[22px] flex items-center justify-center relative overflow-hidden p-3">
+              <ParkitLogo className="w-16 h-16 object-contain filter drop-shadow-[0_4px_12px_rgba(53,181,246,0.6)]" />
               <motion.div
                 animate={{ scale: [1, 1.8, 2.2], opacity: [0.7, 0.3, 0] }}
                 transition={{ duration: 1.8, repeat: Infinity }}

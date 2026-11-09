@@ -518,5 +518,636 @@ export const INITIAL_SAMPLE_LISTINGS = [
       responseTime: "< 25 mins"
     },
     description: "Currently booked until tonight. Located right in Lokhandwala Market vicinity. Suitable for weekend café hoppers and shoppers."
+  },
+  // WORLDWIDE LISTINGS: NEW YORK
+  {
+    id: "pkt-nyc-001",
+    title: "Midtown Manhattan Executive Valet Garage",
+    category: "commercial",
+    address: "350 5th Avenue, Midtown Manhattan, New York, NY 10118, USA",
+    locality: "New York, USA",
+    lat: 40.7484,
+    lng: -73.9857,
+    hourlyPrice: 18,
+    dailyPrice: 95,
+    monthlyPrice: 650,
+    currencySymbol: "$",
+    currency: "USD",
+    vehicleTypes: ["four_wheeler", "suv", "ev"],
+    isCovered: true,
+    hasCCTV: true,
+    hasSecurity: true,
+    hasEVCharging: true,
+    hasValet: true,
+    isAvailable: true,
+    rating: 4.9,
+    reviewCount: 112,
+    image: "https://images.unsplash.com/photo-1590674899484-d5640e854abe?auto=format&fit=crop&w=1000&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1590674899484-d5640e854abe?auto=format&fit=crop&w=1000&q=80",
+      "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&w=1000&q=80"
+    ],
+    schedule: {
+      openTime: "00:00",
+      closeTime: "23:59",
+      recurringDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      blockedDates: [],
+      blockedSlots: []
+    },
+    owner: {
+      id: "own-nyc-1",
+      name: "Marcus Vance",
+      type: "Garage Supervisor",
+      phone: "+1 212 555 0192",
+      maskedPhone: "+1 212 555 ••••",
+      verified: true,
+      responseRate: "99%",
+      responseTime: "< 2 mins"
+    },
+    description: "Premier climate-controlled covered parking directly across from Empire State Building. Automated license plate recognition and Tesla Superchargers on B2."
+  },
+  {
+    id: "pkt-nyc-002",
+    title: "Times Square Broadway Theater Parking Bay",
+    category: "event",
+    address: "220 W 44th St, Times Square, New York, NY 10036, USA",
+    locality: "New York, USA",
+    lat: 40.7580,
+    lng: -73.9855,
+    hourlyPrice: 22,
+    dailyPrice: 120,
+    monthlyPrice: 780,
+    currencySymbol: "$",
+    currency: "USD",
+    vehicleTypes: ["four_wheeler", "suv", "ev"],
+    isCovered: true,
+    hasCCTV: true,
+    hasSecurity: true,
+    hasEVCharging: true,
+    hasValet: true,
+    isAvailable: true,
+    rating: 4.8,
+    reviewCount: 84,
+    image: "https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?auto=format&fit=crop&w=1000&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?auto=format&fit=crop&w=1000&q=80"
+    ],
+    schedule: {
+      openTime: "06:00",
+      closeTime: "23:59",
+      recurringDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      blockedDates: [],
+      blockedSlots: []
+    },
+    owner: {
+      id: "own-nyc-2",
+      name: "David Chen",
+      type: "Theater District Host",
+      phone: "+1 917 555 3341",
+      maskedPhone: "+1 917 555 ••••",
+      verified: true,
+      responseRate: "97%",
+      responseTime: "< 5 mins"
+    },
+    description: "Guaranteed reserved parking right next to Broadway theaters. Avoid the post-show gridlock with swift elevator exit and 24/7 security."
+  },
+  // WORLDWIDE LISTINGS: LONDON
+  {
+    id: "pkt-ldn-001",
+    title: "Westminster Parliament Square Secure Bay",
+    category: "office",
+    address: "Great George St, Westminster, London SW1P 3AA, United Kingdom",
+    locality: "London, UK",
+    lat: 51.5014,
+    lng: -0.1276,
+    hourlyPrice: 14,
+    dailyPrice: 70,
+    monthlyPrice: 480,
+    currencySymbol: "£",
+    currency: "GBP",
+    vehicleTypes: ["four_wheeler", "suv", "ev"],
+    isCovered: true,
+    hasCCTV: true,
+    hasSecurity: true,
+    hasEVCharging: true,
+    hasValet: false,
+    isAvailable: true,
+    rating: 4.9,
+    reviewCount: 96,
+    image: "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&w=1000&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&w=1000&q=80"
+    ],
+    schedule: {
+      openTime: "07:00",
+      closeTime: "22:00",
+      recurringDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      blockedDates: [],
+      blockedSlots: []
+    },
+    owner: {
+      id: "own-ldn-1",
+      name: "Alistair Finch",
+      type: "Commercial Host",
+      phone: "+44 20 7946 0912",
+      maskedPhone: "+44 20 •••• 0912",
+      verified: true,
+      responseRate: "100%",
+      responseTime: "< 3 mins"
+    },
+    description: "Inside the London Congestion & ULEZ zone. Secured underground car park with high surveillance, electric barrier pass, and CCS Rapid Chargers."
+  },
+  {
+    id: "pkt-ldn-002",
+    title: "Canary Wharf Financial Underground Bay",
+    category: "commercial",
+    address: "Bank St, Canary Wharf, London E14 5JP, United Kingdom",
+    locality: "London, UK",
+    lat: 51.5033,
+    lng: -0.0195,
+    hourlyPrice: 12,
+    dailyPrice: 60,
+    monthlyPrice: 420,
+    currencySymbol: "£",
+    currency: "GBP",
+    vehicleTypes: ["four_wheeler", "suv", "two_wheeler", "ev"],
+    isCovered: true,
+    hasCCTV: true,
+    hasSecurity: true,
+    hasEVCharging: true,
+    hasValet: true,
+    isAvailable: true,
+    rating: 4.8,
+    reviewCount: 65,
+    image: "https://images.unsplash.com/photo-1590674899484-d5640e854abe?auto=format&fit=crop&w=1000&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1590674899484-d5640e854abe?auto=format&fit=crop&w=1000&q=80"
+    ],
+    schedule: {
+      openTime: "06:00",
+      closeTime: "23:59",
+      recurringDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      blockedDates: [],
+      blockedSlots: []
+    },
+    owner: {
+      id: "own-ldn-2",
+      name: "Victoria Sterling",
+      type: "Tower Logistics",
+      phone: "+44 20 7946 0884",
+      maskedPhone: "+44 20 •••• 0884",
+      verified: true,
+      responseRate: "98%",
+      responseTime: "< 4 mins"
+    },
+    description: "Executive basement parking directly below corporate headquarters in Canary Wharf. Smooth direct link to Jubilee line and Elizabeth line."
+  },
+  // WORLDWIDE LISTINGS: TOKYO
+  {
+    id: "pkt-tky-001",
+    title: "Shibuya Crossing Automated Parking Tower",
+    category: "commercial",
+    address: "2 Chome-21-1 Shibuya, Tokyo 150-8510, Japan",
+    locality: "Tokyo, Japan",
+    lat: 35.6595,
+    lng: 139.7005,
+    hourlyPrice: 800,
+    dailyPrice: 3800,
+    monthlyPrice: 32000,
+    currencySymbol: "¥",
+    currency: "JPY",
+    vehicleTypes: ["four_wheeler", "suv"],
+    isCovered: true,
+    hasCCTV: true,
+    hasSecurity: true,
+    hasEVCharging: true,
+    hasValet: false,
+    isAvailable: true,
+    rating: 4.9,
+    reviewCount: 140,
+    image: "https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?auto=format&fit=crop&w=1000&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?auto=format&fit=crop&w=1000&q=80"
+    ],
+    schedule: {
+      openTime: "00:00",
+      closeTime: "23:59",
+      recurringDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      blockedDates: [],
+      blockedSlots: []
+    },
+    owner: {
+      id: "own-tky-1",
+      name: "Kenji Sato",
+      type: "Tower Operator",
+      phone: "+81 3 5555 0143",
+      maskedPhone: "+81 3 •••• 0143",
+      verified: true,
+      responseRate: "100%",
+      responseTime: "< 1 min"
+    },
+    description: "State-of-the-art robotic stacking parking tower 90 meters from Shibuya Scramble Crossing. Fast automated retrieval in under 90 seconds."
+  },
+  // WORLDWIDE LISTINGS: PARIS
+  {
+    id: "pkt-par-001",
+    title: "Champs-Élysées Franklin Roosevelt Covered Lot",
+    category: "commercial",
+    address: "Av. des Champs-Élysées, 75008 Paris, France",
+    locality: "Paris, France",
+    lat: 48.8698,
+    lng: 2.3075,
+    hourlyPrice: 15,
+    dailyPrice: 75,
+    monthlyPrice: 520,
+    currencySymbol: "€",
+    currency: "EUR",
+    vehicleTypes: ["four_wheeler", "suv", "ev"],
+    isCovered: true,
+    hasCCTV: true,
+    hasSecurity: true,
+    hasEVCharging: true,
+    hasValet: true,
+    isAvailable: true,
+    rating: 4.9,
+    reviewCount: 78,
+    image: "https://images.unsplash.com/photo-1590674899484-d5640e854abe?auto=format&fit=crop&w=1000&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1590674899484-d5640e854abe?auto=format&fit=crop&w=1000&q=80"
+    ],
+    schedule: {
+      openTime: "06:00",
+      closeTime: "23:30",
+      recurringDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      blockedDates: [],
+      blockedSlots: []
+    },
+    owner: {
+      id: "own-par-1",
+      name: "Jean-Pierre Laurent",
+      type: "Stationnement Gestionnaire",
+      phone: "+33 1 42 68 00 22",
+      maskedPhone: "+33 1 •• •• 00 22",
+      verified: true,
+      responseRate: "96%",
+      responseTime: "< 5 mins"
+    },
+    description: "Prime covered parking in the 8th arrondissement. Wide ramp access accommodating large vehicles, clean barrier entry with PIN keypad."
+  },
+  // WORLDWIDE LISTINGS: DUBAI
+  {
+    id: "pkt-dxb-001",
+    title: "Downtown Dubai Burj Khalifa Boulevard Bay",
+    category: "commercial",
+    address: "Sheikh Mohammed bin Rashid Blvd, Downtown Dubai, UAE",
+    locality: "Dubai, UAE",
+    lat: 25.1972,
+    lng: 55.2744,
+    hourlyPrice: 35,
+    dailyPrice: 220,
+    monthlyPrice: 1600,
+    currencySymbol: "AED ",
+    currency: "AED",
+    vehicleTypes: ["four_wheeler", "suv", "ev"],
+    isCovered: true,
+    hasCCTV: true,
+    hasSecurity: true,
+    hasEVCharging: true,
+    hasValet: true,
+    isAvailable: true,
+    rating: 4.9,
+    reviewCount: 185,
+    image: "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&w=1000&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&w=1000&q=80"
+    ],
+    schedule: {
+      openTime: "00:00",
+      closeTime: "23:59",
+      recurringDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      blockedDates: [],
+      blockedSlots: []
+    },
+    owner: {
+      id: "own-dxb-1",
+      name: "Tariq Al-Mansoor",
+      type: "Boulevard Facility Manager",
+      phone: "+971 4 367 0000",
+      maskedPhone: "+971 4 ••• ••••",
+      verified: true,
+      responseRate: "100%",
+      responseTime: "< 2 mins"
+    },
+    description: "Direct air-conditioned pedestrian link to Dubai Mall and Burj Khalifa. High security clearance, wide supercar-friendly bays, and valet assist."
+  },
+  // WORLDWIDE LISTINGS: SINGAPORE
+  {
+    id: "pkt-sin-001",
+    title: "Marina Bay Financial Centre Tower Parking",
+    category: "office",
+    address: "10 Marina Blvd, Marina Bay, Singapore 018983",
+    locality: "Singapore",
+    lat: 1.2805,
+    lng: 103.8540,
+    hourlyPrice: 8,
+    dailyPrice: 45,
+    monthlyPrice: 380,
+    currencySymbol: "S$",
+    currency: "SGD",
+    vehicleTypes: ["four_wheeler", "suv", "ev"],
+    isCovered: true,
+    hasCCTV: true,
+    hasSecurity: true,
+    hasEVCharging: true,
+    hasValet: false,
+    isAvailable: true,
+    rating: 4.9,
+    reviewCount: 92,
+    image: "https://images.unsplash.com/photo-1590674899484-d5640e854abe?auto=format&fit=crop&w=1000&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1590674899484-d5640e854abe?auto=format&fit=crop&w=1000&q=80"
+    ],
+    schedule: {
+      openTime: "06:00",
+      closeTime: "23:59",
+      recurringDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      blockedDates: [],
+      blockedSlots: []
+    },
+    owner: {
+      id: "own-sin-1",
+      name: "Wei Ling Tan",
+      type: "Commercial Host",
+      phone: "+65 6789 0123",
+      maskedPhone: "+65 6789 ••••",
+      verified: true,
+      responseRate: "99%",
+      responseTime: "< 3 mins"
+    },
+    description: "Clean, ultra-secure basement bay in Singapore's financial core. Electronic ERP barrier sync and 50kW DC fast charging."
+  },
+  // WORLDWIDE LISTINGS: SYDNEY
+  {
+    id: "pkt-syd-001",
+    title: "Sydney CBD Harbour Bridge View Parking",
+    category: "commercial",
+    address: "George St, The Rocks, Sydney NSW 2000, Australia",
+    locality: "Sydney, Australia",
+    lat: -33.8588,
+    lng: 151.2090,
+    hourlyPrice: 16,
+    dailyPrice: 80,
+    monthlyPrice: 550,
+    currencySymbol: "A$",
+    currency: "AUD",
+    vehicleTypes: ["four_wheeler", "suv", "two_wheeler", "ev"],
+    isCovered: true,
+    hasCCTV: true,
+    hasSecurity: true,
+    hasEVCharging: true,
+    hasValet: false,
+    isAvailable: true,
+    rating: 4.8,
+    reviewCount: 71,
+    image: "https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?auto=format&fit=crop&w=1000&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?auto=format&fit=crop&w=1000&q=80"
+    ],
+    schedule: {
+      openTime: "06:30",
+      closeTime: "23:00",
+      recurringDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      blockedDates: [],
+      blockedSlots: []
+    },
+    owner: {
+      id: "own-syd-1",
+      name: "Liam O'Connor",
+      type: "Harbour Properties",
+      phone: "+61 2 9250 0111",
+      maskedPhone: "+61 2 •••• 0111",
+      verified: true,
+      responseRate: "97%",
+      responseTime: "< 5 mins"
+    },
+    description: "Short walk to Circular Quay, Sydney Opera House and Barangaroo. Covered multi-deck bay with automated boom gate access."
+  },
+  // WORLDWIDE LISTINGS: BERLIN
+  {
+    id: "pkt-ber-001",
+    title: "Berlin Alexanderplatz Central Underground Lot",
+    category: "commercial",
+    address: "Alexanderstraße, 10178 Berlin, Germany",
+    locality: "Berlin, Germany",
+    lat: 52.5219,
+    lng: 13.4132,
+    hourlyPrice: 10,
+    dailyPrice: 50,
+    monthlyPrice: 360,
+    currencySymbol: "€",
+    currency: "EUR",
+    vehicleTypes: ["four_wheeler", "suv", "ev"],
+    isCovered: true,
+    hasCCTV: true,
+    hasSecurity: true,
+    hasEVCharging: true,
+    hasValet: false,
+    isAvailable: true,
+    rating: 4.7,
+    reviewCount: 59,
+    image: "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&w=1000&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&w=1000&q=80"
+    ],
+    schedule: {
+      openTime: "00:00",
+      closeTime: "23:59",
+      recurringDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      blockedDates: [],
+      blockedSlots: []
+    },
+    owner: {
+      id: "own-ber-1",
+      name: "Maximilian Weber",
+      type: "Parkhaus Manager",
+      phone: "+49 30 2400 0012",
+      maskedPhone: "+49 30 •••• 0012",
+      verified: true,
+      responseRate: "98%",
+      responseTime: "< 4 mins"
+    },
+    description: "Spacious underground parkhaus right beneath Alexanderplatz. Easy navigation, EV charging pillars, 24/7 staff support."
+  },
+  // WORLDWIDE LISTINGS: TORONTO
+  {
+    id: "pkt-tor-001",
+    title: "Toronto Downtown Financial District Bay",
+    category: "office",
+    address: "Bay St & King St W, Toronto, ON M5H 2Y4, Canada",
+    locality: "Toronto, Canada",
+    lat: 43.6487,
+    lng: -79.3817,
+    hourlyPrice: 15,
+    dailyPrice: 75,
+    monthlyPrice: 490,
+    currencySymbol: "C$",
+    currency: "CAD",
+    vehicleTypes: ["four_wheeler", "suv", "ev"],
+    isCovered: true,
+    hasCCTV: true,
+    hasSecurity: true,
+    hasEVCharging: true,
+    hasValet: false,
+    isAvailable: true,
+    rating: 4.8,
+    reviewCount: 68,
+    image: "https://images.unsplash.com/photo-1590674899484-d5640e854abe?auto=format&fit=crop&w=1000&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1590674899484-d5640e854abe?auto=format&fit=crop&w=1000&q=80"
+    ],
+    schedule: {
+      openTime: "06:00",
+      closeTime: "23:00",
+      recurringDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      blockedDates: [],
+      blockedSlots: []
+    },
+    owner: {
+      id: "own-tor-1",
+      name: "Ethan Tremblay",
+      type: "Tower Host",
+      phone: "+1 416 555 0184",
+      maskedPhone: "+1 416 555 ••••",
+      verified: true,
+      responseRate: "99%",
+      responseTime: "< 2 mins"
+    },
+    description: "Heated underground commercial lot directly connected to PATH underground walkway system. Perfect in winter and summer alike."
+  },
+  // WORLDWIDE LISTINGS: SAN FRANCISCO
+  {
+    id: "pkt-sfo-001",
+    title: "San Francisco Union Square & Financial Garage",
+    category: "commercial",
+    address: "Post St, Union Square, San Francisco, CA 94108, USA",
+    locality: "San Francisco, USA",
+    lat: 37.7885,
+    lng: -122.4075,
+    hourlyPrice: 16,
+    dailyPrice: 85,
+    monthlyPrice: 620,
+    currencySymbol: "$",
+    currency: "USD",
+    vehicleTypes: ["four_wheeler", "suv", "ev"],
+    isCovered: true,
+    hasCCTV: true,
+    hasSecurity: true,
+    hasEVCharging: true,
+    hasValet: true,
+    isAvailable: true,
+    rating: 4.8,
+    reviewCount: 94,
+    image: "https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?auto=format&fit=crop&w=1000&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?auto=format&fit=crop&w=1000&q=80"
+    ],
+    schedule: {
+      openTime: "06:00",
+      closeTime: "23:59",
+      recurringDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      blockedDates: [],
+      blockedSlots: []
+    },
+    owner: {
+      id: "own-sfo-1",
+      name: "Sarah Jenkins",
+      type: "Property Partner",
+      phone: "+1 415 555 0127",
+      maskedPhone: "+1 415 555 ••••",
+      verified: true,
+      responseRate: "98%",
+      responseTime: "< 5 mins"
+    },
+    description: "Secure indoor garage in downtown San Francisco. 24/7 security attendant, high gate clearance, and level 2 EV charging stations."
   }
 ];
+
+/**
+ * Generates realistic nearby sample listings around any worldwide coordinate
+ * when no pre-configured sample listings are within proximity range.
+ * This guarantees PARKIT works seamlessly across the entire globe!
+ */
+export function generateNearbySampleSpots(centerLat, centerLng, localityLabel = "Local Area") {
+  const categories = ["commercial", "residential", "office", "private", "mall"];
+  const spotTypes = [
+    { title: "Central Executive Bay", cat: "commercial", price: 65, symbol: "₹" },
+    { title: "Gated Resident Visitor Parking", cat: "residential", price: 45, symbol: "₹" },
+    { title: "Tower Basement Reserved Bay", cat: "office", price: 75, symbol: "₹" },
+    { title: "Private Driveway Shaded Spot", cat: "private", price: 40, symbol: "₹" }
+  ];
+
+  // Distribute 4 realistic spots around the coordinate (between 80m and 450m)
+  const offsets = [
+    { dLat: 0.0012, dLng: 0.0015 },
+    { dLat: -0.0018, dLng: 0.0011 },
+    { dLat: 0.0016, dLng: -0.0022 },
+    { dLat: -0.0014, dLng: -0.0016 }
+  ];
+
+  const images = [
+    "https://images.unsplash.com/photo-1590674899484-d5640e854abe?auto=format&fit=crop&w=1000&q=80",
+    "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&w=1000&q=80",
+    "https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?auto=format&fit=crop&w=1000&q=80",
+    "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=1000&q=80"
+  ];
+
+  return spotTypes.map((template, idx) => {
+    const lat = Number((centerLat + offsets[idx].dLat).toFixed(6));
+    const lng = Number((centerLng + offsets[idx].dLng).toFixed(6));
+    const id = `pkt-geo-${Math.abs(Math.round(lat * 1000))}-${Math.abs(Math.round(lng * 1000))}-${idx}`;
+
+    return {
+      id,
+      title: `${localityLabel.split(",")[0].trim()} ${template.title}`,
+      category: template.cat,
+      address: `Near ${localityLabel}`,
+      locality: localityLabel,
+      lat,
+      lng,
+      hourlyPrice: template.price,
+      dailyPrice: template.price * 8,
+      monthlyPrice: template.price * 100,
+      currencySymbol: template.symbol,
+      vehicleTypes: ["four_wheeler", "suv", "two_wheeler", "ev"],
+      isCovered: idx % 2 === 0,
+      hasCCTV: true,
+      hasSecurity: true,
+      hasEVCharging: idx === 0 || idx === 2,
+      hasValet: idx === 0,
+      isAvailable: true,
+      rating: Number((4.6 + (idx * 0.1)).toFixed(1)),
+      reviewCount: 24 + idx * 18,
+      image: images[idx % images.length],
+      images: [images[idx % images.length]],
+      schedule: {
+        openTime: "06:00",
+        closeTime: "23:59",
+        recurringDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+        blockedDates: [],
+        blockedSlots: []
+      },
+      owner: {
+        id: `own-geo-${idx}`,
+        name: idx === 0 ? "Alex Morgan" : idx === 1 ? "Priya Sharma" : idx === 2 ? "James Wilson" : "Elena Rostova",
+        type: "Verified Host",
+        phone: "+1 800 555 0100",
+        maskedPhone: "+1 800 ••• ••••",
+        verified: true,
+        responseRate: "98%",
+        responseTime: "< 5 mins"
+      },
+      description: `Guaranteed reserved parking space situated conveniently in ${localityLabel}. Clean, well-maintained with barrier entrance and 24/7 security verification.`
+    };
+  });
+}
+

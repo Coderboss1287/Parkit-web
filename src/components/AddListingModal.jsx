@@ -18,11 +18,15 @@ import {
 import { useApp } from "../context/AppContext";
 import { PARKING_CATEGORIES, LOCALITIES_MUMBAI, VEHICLE_TYPES } from "../data/categories";
 import { calculateSuggestedPrice } from "../utils/pricingEngine";
+import atlasMaps from "../services/atlasMapsClient";
 
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export default function AddListingModal({ isOpen, onClose }) {
   const { addListing } = useApp();
+
+  const [isAutoLocating, setIsAutoLocating] = useState(false);
+  const [autoLocateStatus, setAutoLocateStatus] = useState("");
 
   const [formData, setFormData] = useState({
     title: "",
@@ -95,6 +99,35 @@ export default function AddListingModal({ isOpen, onClose }) {
       setFormData({ ...formData, recurringDays: current.filter((d) => d !== day) });
     } else {
       setFormData({ ...formData, recurringDays: [...current, day] });
+    }
+  };
+
+  const handleAutoLocateCoordinates = async () => {
+    const query = formData.address || formData.locality;
+    if (!query) {
+      setAutoLocateStatus("Please enter an address or select a locality first.");
+      return;
+    }
+    setIsAutoLocating(true);
+    setAutoLocateStatus("Geocoding via ATLAS Maps API...");
+    try {
+      const results = await atlasMaps.geocodeSearch(query, 1);
+      if (results && results.length > 0) {
+        const top = results[0];
+        setFormData((prev) => ({
+          ...prev,
+          lat: Number(top.lat.toFixed(5)),
+          lng: Number(top.lng.toFixed(5)),
+          address: prev.address || top.displayName
+        }));
+        setAutoLocateStatus(`✓ Pinned: ${top.lat.toFixed(4)}, ${top.lng.toFixed(4)} (${top.source || "ATLAS"})`);
+      } else {
+        setAutoLocateStatus("Address not found via geocoder. Keeping locality coordinates.");
+      }
+    } catch {
+      setAutoLocateStatus("Auto-geocoding offline. You can adjust coordinates manually.");
+    } finally {
+      setIsAutoLocating(false);
     }
   };
 
@@ -215,9 +248,21 @@ export default function AddListingModal({ isOpen, onClose }) {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Full Building / Gate Address *
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Full Building / Gate Address *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleAutoLocateCoordinates}
+                    disabled={isAutoLocating}
+                    className="text-[11px] font-black text-emerald-700 hover:text-emerald-800 hover:underline flex items-center gap-1 transition cursor-pointer"
+                    title="Auto-geolocate address via ATLAS Geocoding API"
+                  >
+                    <MapPin className="w-3 h-3 text-emerald-600" />
+                    <span>{isAutoLocating ? "Geocoding..." : "Auto-Locate via ATLAS API"}</span>
+                  </button>
+                </div>
                 <input
                   type="text"
                   required
@@ -226,6 +271,37 @@ export default function AddListingModal({ isOpen, onClose }) {
                   placeholder="e.g. Wing B, Hiranandani Estate, Thane West"
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500 focus:bg-white transition"
                 />
+                {autoLocateStatus && (
+                  <div className="mt-1 text-[11px] font-semibold text-emerald-700">
+                    {autoLocateStatus}
+                  </div>
+                )}
+                <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-100">
+                  <div>
+                    <label className="block text-[10px] font-extrabold uppercase text-slate-400 mb-0.5">
+                      Latitude (ATLAS)
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={formData.lat}
+                      onChange={(e) => setFormData({ ...formData, lat: parseFloat(e.target.value) || formData.lat })}
+                      className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-slate-700"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-extrabold uppercase text-slate-400 mb-0.5">
+                      Longitude (ATLAS)
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={formData.lng}
+                      onChange={(e) => setFormData({ ...formData, lng: parseFloat(e.target.value) || formData.lng })}
+                      className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-slate-700"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 

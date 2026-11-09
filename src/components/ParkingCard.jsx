@@ -10,7 +10,8 @@ import {
   Phone,
   CheckCircle,
   AlertCircle,
-  Sparkles
+  Sparkles,
+  Navigation
 } from "lucide-react";
 import { PARKING_CATEGORIES } from "../data/categories";
 
@@ -27,16 +28,42 @@ export default function ParkingCard({
     badgeColor: "bg-slate-100 text-slate-800"
   };
 
+  const formattedDistance = React.useMemo(() => {
+    if (listing.distanceKm !== undefined && listing.distanceKm !== null) {
+      return listing.distanceKm < 1
+        ? `${Math.round(listing.distanceKm * 1000)} m`
+        : `${listing.distanceKm.toFixed(1)} km`;
+    }
+    if (distanceMeters !== undefined && distanceMeters !== null) {
+      return distanceMeters < 1000
+        ? `${distanceMeters} m`
+        : `${(distanceMeters / 1000).toFixed(1)} km`;
+    }
+    return null;
+  }, [listing.distanceKm, distanceMeters]);
+
   return (
     <div
+      id={`parking-card-${listing.id}`}
       onClick={onSelect}
       className={`group bg-white rounded-3xl p-4 sm:p-5 shadow-premium hover:shadow-premium-lg border-2 transition-all duration-300 cursor-pointer flex flex-col justify-between ${
         isSelected
-          ? "border-parkit-green ring-4 ring-emerald-500/15"
+          ? "border-emerald-500 ring-4 ring-emerald-400/30 bg-emerald-50/15 shadow-2xl scale-[1.01]"
           : "border-slate-200/80 hover:border-parkit-sky/60"
       }`}
     >
       <div>
+        {/* Selected Spot Banner Indicator */}
+        {isSelected && (
+          <div className="mb-3 -mt-1 flex items-center justify-between px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-parkit-green text-white rounded-xl text-xs font-black tracking-wide shadow-sm animate-fadeIn">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-white animate-ping"></span>
+              <span>SELECTED SPOT</span>
+            </span>
+            <span className="text-[10px] font-bold text-emerald-100 uppercase tracking-wider">Active On Map</span>
+          </div>
+        )}
+
         {/* Image & Badges */}
         <div className="relative w-full h-44 rounded-2xl overflow-hidden mb-4 bg-slate-100">
           <img
@@ -59,6 +86,12 @@ export default function ParkingCard({
             ) : (
               <span className="px-2 py-1 rounded-xl text-[10px] font-bold bg-amber-500/90 text-white backdrop-blur-md shadow-sm">
                 Open Bay
+              </span>
+            )}
+            {formattedDistance && (
+              <span className="px-2.5 py-1 rounded-xl text-[10px] font-extrabold bg-blue-600/90 text-white backdrop-blur-md shadow-sm flex items-center gap-1">
+                <Navigation className="w-3 h-3 text-cyan-200" />
+                <span>{formattedDistance}</span>
               </span>
             )}
           </div>
@@ -107,9 +140,10 @@ export default function ParkingCard({
             <Clock className="w-3.5 h-3.5 text-parkit-sky" />
             <span>{listing.schedule.openTime} – {listing.schedule.closeTime}</span>
           </span>
-          {distanceMeters !== undefined && (
-            <span className="font-bold text-parkit-royal">
-              {distanceMeters < 1000 ? `${distanceMeters}m away` : `${(distanceMeters / 1000).toFixed(1)} km`}
+          {formattedDistance && (
+            <span className="font-extrabold text-parkit-royal flex items-center gap-1">
+              <Navigation className="w-3 h-3 text-parkit-sky" />
+              <span>{formattedDistance} away</span>
             </span>
           )}
         </div>

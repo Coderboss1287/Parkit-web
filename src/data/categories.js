@@ -81,7 +81,7 @@ export const VEHICLE_TYPES = [
 ];
 
 export const LOCALITIES_MUMBAI = [
-  { name: "All Localities", lat: 19.0760, lng: 72.8777, zoom: 11 },
+  { name: "All Localities (Mumbai)", lat: 19.0760, lng: 72.8777, zoom: 11 },
   { name: "Bandra West, Mumbai", lat: 19.0596, lng: 72.8295, zoom: 14 },
   { name: "BKC (Bandra Kurla Complex), Mumbai", lat: 19.0657, lng: 72.8687, zoom: 14 },
   { name: "Lower Parel, Mumbai", lat: 18.9953, lng: 72.8304, zoom: 14 },
@@ -94,4 +94,18 @@ export const LOCALITIES_MUMBAI = [
   { name: "Panvel, Navi Mumbai", lat: 18.9894, lng: 73.1175, zoom: 14 },
   { name: "Naupada, Thane West", lat: 19.1860, lng: 72.9734, zoom: 14 },
   { name: "Ghodbunder Road, Thane", lat: 19.2612, lng: 72.9647, zoom: 14 }
+];
+
+export const GLOBAL_CITIES = [
+  { name: "Mumbai, India", country: "India", lat: 19.0760, lng: 72.8777, zoom: 12, currency: "₹", symbol: "₹" },
+  { name: "New York, USA", country: "USA", lat: 40.7128, lng: -74.0060, zoom: 13, currency: "$", symbol: "$" },
+  { name: "London, UK", country: "UK", lat: 51.5074, lng: -0.1278, zoom: 13, currency: "£", symbol: "£" },
+  { name: "Tokyo, Japan", country: "Japan", lat: 35.6762, lng: 139.6503, zoom: 13, currency: "¥", symbol: "¥" },
+  { name: "Paris, France", country: "France", lat: 48.8566, lng: 2.3522, zoom: 13, currency: "€", symbol: "€" },
+  { name: "Dubai, UAE", country: "UAE", lat: 25.2048, lng: 55.2708, zoom: 13, currency: "AED", symbol: "AED " },
+  { name: "Singapore", country: "Singapore", lat: 1.3521, lng: 103.8198, zoom: 13, currency: "S$", symbol: "S$" },
+  { name: "Sydney, Australia", country: "Australia", lat: -33.8688, lng: 151.2093, zoom: 13, currency: "A$", symbol: "A$" },
+  { name: "Berlin, Germany", country: "Germany", lat: 52.5200, lng: 13.4050, zoom: 13, currency: "€", symbol: "€" },
+  { name: "Toronto, Canada", country: "Canada", lat: 43.6532, lng: -79.3832, zoom: 13, currency: "C$", symbol: "C$" },
+  { name: "San Francisco, USA", country: "USA", lat: 37.7749, lng: -122.4194, zoom: 13, currency: "$", symbol: "$" }
 ];
