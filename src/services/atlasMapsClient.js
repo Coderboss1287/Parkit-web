@@ -55,7 +55,10 @@ export const ATLAS_TILE_STYLES = ATLAS_MAP_STYLES;
 
 class AtlasMapsClient {
   constructor(baseUrl = DEFAULT_API_URL, apiKey = DEFAULT_API_KEY) {
-    this.baseUrl = baseUrl.replace(/\/+$/, "");
+    const overrideUrl = typeof window !== "undefined" 
+      ? (localStorage.getItem("parkit_api_url") || window.__PARKIT_API_URL__) 
+      : null;
+    this.baseUrl = (overrideUrl || baseUrl || "").replace(/\/+$/, "");
     this.apiKey = apiKey;
     this.backendHealthy = null;
     this.lastHealthCheck = 0;
@@ -477,6 +480,13 @@ class AtlasMapsClient {
    * Register new user in persistent SQL database
    */
   async signupUser(userData) {
+    const isGitHubPages = typeof window !== "undefined" && window.location.hostname.endsWith("github.io");
+    if (isGitHubPages && !this.baseUrl) {
+      throw new Error(
+        "Authentication backend not connected. GitHub Pages is a static host and cannot process account registrations directly. Please configure VITE_ATLAS_API_URL pointing to the deployed FastAPI backend."
+      );
+    }
+
     try {
       const res = await fetch(`${this.baseUrl}/v1/parkit/auth/signup`, {
         method: "POST",
@@ -494,6 +504,11 @@ class AtlasMapsClient {
         })
       });
       if (!res.ok) {
+        if (res.status === 405) {
+          throw new Error(
+            "Registration endpoint returned HTTP 405 (Method Not Allowed). GitHub Pages does not support POST requests. The FastAPI backend must be deployed to cloud hosting (e.g. Render/Railway) and configured as VITE_ATLAS_API_URL."
+          );
+        }
         const errData = await res.json().catch(() => ({}));
         const msg = errData.detail || `Registration failed (${res.status})`;
         const err = new Error(msg);
@@ -503,8 +518,9 @@ class AtlasMapsClient {
       return await res.json();
     } catch (err) {
       if (err.status) throw err;
+      if (err.message && (err.message.includes("405") || err.message.includes("GitHub Pages"))) throw err;
       console.error("Backend user signup connection failed:", err);
-      throw new Error("Unable to connect to authentication server. Please ensure the backend is running.");
+      throw new Error(err.message || "Unable to connect to authentication server. Please ensure the backend is running.");
     }
   }
 
@@ -515,6 +531,13 @@ class AtlasMapsClient {
     if (userData?.authMode === "signup") {
       return this.signupUser(userData);
     }
+    const isGitHubPages = typeof window !== "undefined" && window.location.hostname.endsWith("github.io");
+    if (isGitHubPages && !this.baseUrl) {
+      throw new Error(
+        "Authentication backend not connected. GitHub Pages is a static host. Please configure VITE_ATLAS_API_URL pointing to the deployed FastAPI backend."
+      );
+    }
+
     try {
       const res = await fetch(`${this.baseUrl}/v1/parkit/auth/login`, {
         method: "POST",
@@ -529,6 +552,11 @@ class AtlasMapsClient {
         })
       });
       if (!res.ok) {
+        if (res.status === 405) {
+          throw new Error(
+            "Login endpoint returned HTTP 405 (Method Not Allowed). GitHub Pages does not support POST requests. The FastAPI backend must be deployed to cloud hosting (e.g. Render/Railway) and configured as VITE_ATLAS_API_URL."
+          );
+        }
         const errData = await res.json().catch(() => ({}));
         const msg = errData.detail || `Authentication failed (${res.status})`;
         const err = new Error(msg);
@@ -538,8 +566,9 @@ class AtlasMapsClient {
       return await res.json();
     } catch (err) {
       if (err.status) throw err;
+      if (err.message && (err.message.includes("405") || err.message.includes("GitHub Pages"))) throw err;
       console.error("Backend user login connection failed:", err);
-      throw new Error("Unable to connect to authentication server. Please ensure the backend is running.");
+      throw new Error(err.message || "Unable to connect to authentication server. Please ensure the backend is running.");
     }
   }
 

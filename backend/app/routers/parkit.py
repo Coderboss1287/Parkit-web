@@ -127,7 +127,9 @@ class MessageCreateRequest(BaseModel):
 # -----------------------------------------------------------------------------
 
 @router.post("/auth/signup")
+@router.post("/auth/signup/")
 @router.post("/auth/register")
+@router.post("/auth/register/")
 def register_user(req: UserSignupRequest, db: Session = Depends(get_db)):
     email = req.email.strip().lower()
     now = datetime.datetime.now(datetime.timezone.utc)
@@ -189,6 +191,7 @@ def register_user(req: UserSignupRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/auth/login")
+@router.post("/auth/login/")
 def login_user(req: UserLoginRequest, db: Session = Depends(get_db)):
     # Dispatches to signup logic if client requested registration
     if req.authMode == "signup":

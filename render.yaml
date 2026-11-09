@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: parkit-atlas-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ATLAS_ENV
+        value: production
+      - key: ATLAS_SECRET_KEY
+        generateValue: true
+      - key: DEFAULT_DEMO_KEY
+        value: atlas_live_demo_key_9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c
+
